@@ -1,6 +1,7 @@
 # I have a global closure.bat that calls java --jar closure.jar $ARGS
 SHELL=C:/Windows/System32/cmd.exe
 JSC := closure
+# I do this because *.js would match each file twice. (minified + regular!)
 JSMINFILES = $(wildcard *.min.js)
 JSFILES=$(JSMINFILES:.min.js=.js)
 
