@@ -20,3 +20,8 @@
 *.PDF	 diff=astextplain
 *.rtf	 diff=astextplain
 *.RTF	 diff=astextplain
+
+# My additions
+
+# Treat minified source as binary, no diff needed
+*.min.js binary
