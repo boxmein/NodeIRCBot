@@ -5,22 +5,45 @@ var output = {
   rawlogging: false,
   verify: function() { return true},
   log: function(sender, message) {
-    if(!config.silent) console.log("[LL] " + sender + ": " + message);
+    if(!config.silent) console.log(col.c(col.black,1) + "[LL] " + sender + ": " + message + col.r());
   },
   err: function(sender, message) {
-    console.log("[EE] " + sender + ": " + message);
+    console.log(col.c(col.red, 1) + "[EE] " + sender + ": " + message + col.r());
   },
   out: function(sender, message) {
-    if(!config.silent) console.log("[>>] " + sender + ": " + message);
+    if(!config.silent) console.log(col.c(col.black, 1) + "[>>] " + sender + ": " + message + col.r());
   },
   inn: function(message) { // typo is on purpose
-    if(!config.silent) console.log("[<<] " + message);
+    if(!config.silent) console.log("[<<] " + message + col.r());
   },
   announce: function(message) {
-    if (!config.silent) console.log("[--] --- " + message + " ---")
+    if (!config.silent) console.log("[--] --- " + message + " ---" + col.r())
   },
   chanmsg: function(ircdata) {
-    if (!config.silent) console.log("[##]<{0}/{1}> {2}".format(ircdata.sender, ircdata.channel, ircdata.message));
+    if (!config.silent) console.log(col.c(col.white,1) + "[##]<{0}/{1}> {2}".format(ircdata.sender, ircdata.channel, ircdata.message) + col.r());
   }
 }
 module.exports = output;
+
+var col = { // ANSI escape colours. 
+  reset          :  0,
+  bold           :  1, // Makes some colours brighter.
+  dark           :  2, // ?
+  underline      :  4,
+  blink          :  5,
+  negative       :  7, // Reverse video!
+  black          : 30,
+  red            : 31,
+  green          : 32,
+  yellow         : 33,
+  blue           : 34,
+  magenta        : 35,
+  cyan           : 36,
+  white          : 37,
+  c: function(color, gmode) {
+    return "\033["+ color + (gmode? ";" + gmode : "") + "m";
+  },
+  r: function() {
+    return "\033[" + col.reset + "m";
+  }
+}
