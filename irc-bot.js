@@ -40,7 +40,6 @@ var connection = {
       irc.raw("NICK " + config.nickname);
       irc.raw("USER " + config.nickname + " 8 * :" + config.realname);
       irc.raw("JOIN " + config.channels);
-      // irc.raw("PRIVMSG NickServ IDENTIFY " + config.pw, true);
     }, 7000);
   },
   handleCommands: function(ircdata) {
@@ -97,7 +96,7 @@ var connection = {
         output.inn("-"+noticedata.sender+"- :" +noticedata.message.trim());
       if (noticedata.sender == "NickServ") {
         output.log("connection.onData", "NickServ sent me");
-        if (noticedata.message.indexOf("30 seconds") != -1) {
+        if (noticedata.message.indexOf("identify") != -1) {
           output.log("connection.onData", "Identifying quick!");
           irc.privmsg("NickServ", "IDENTIFY " + config.pass);
         }
