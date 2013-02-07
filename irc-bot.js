@@ -1,13 +1,16 @@
 
 // @language ECMASCRIPT5
+// ^Closure thing
+
 // When everything falls apart
 // Just don't back down
 // Just keep running
 // Just look ahead
 // You might be losing but you're not dead
 
+// IRC bot core
 
-// WARNING: BEFORE PASTING TO GIST REMOVE config's VALUES
+// WARNING: BEFORE PASTING TO GIST REMOVE config.js
 var net = require("net");
 var http = require("http");
 var sys = require("sys");
@@ -15,14 +18,13 @@ var sys = require("sys");
 var commands = require("./commands.js"); // Channel commands
 var config   = require("./config.js");   // Configuration
 var output   = require("./output.js");   // Output formatting
-var crypto   = require("./cryptography.js"); // Crypto functions
-var irc      = require("./irc.js");      // IRC data
-var allOK = commands.verify() && config.verify() && output.verify() && crypto.verify() 
-            && irc.verify();
-// IRC bot core
-console.log("[--] -------------------------------");
-console.log("[--] Boxmein's node IRC bot started.");
-console.log("[--] -------------------------------");
+var irc      = require("./irc.js");      // IRC wrappers
+
+output.log("","[--] -------------------------------");
+output.log("","[--] Boxmein's node IRC bot started.");
+output.log("","[--] -------------------------------");
+
+var allOK = commands.verify() && config.verify() && output.verify() && irc.verify();
 var connection = {
   client: new net.Socket(),
   PORT: 6667,
@@ -32,7 +34,7 @@ var connection = {
   onConnected: function() { // we are connected!
     irc.setClient(connection.client);
     commands.setIRC(irc);
-    console.log(allOK ? "[##] All modules loaded" : "[EE] Some modules not found") ;
+    console.log(allOK ? "[##] All modules loaded" : "\033]31;1m[EE] Some modules not found") ;
     if (!allOK) process.exit(1);
     output.log("irc.onConnected", "Connection successful");
     output.announce("Press q + enter to exit program.");
@@ -44,12 +46,6 @@ var connection = {
   },
   handleCommands: function(ircdata) {
     output.inn(ircdata.sender + "(in " + ircdata.channel +") called for: " + ircdata.message);
-
-    // IRC message's first word without the # and the \r\n, if existent
-    // Also performs some changes
-    // 1. args ["#command", "arg0", "arg1" ...] -> args ["arg0", "arg1" ...]
-    // 2. .command = "command"
-    // 3. remove foreigns from commands
     ircdata.command = ircdata.args.shift().substring(1).trim().replace(/[^A-Za-z]+?/gi, ""); 
     // commands.cmdlist is now chief in executive for testing whether a command exists
     if (commands.cmdlist.hasOwnProperty(ircdata.command)) {
@@ -98,7 +94,7 @@ var connection = {
         output.log("connection.onData", "NickServ sent me");
         if (noticedata.message.indexOf("identify") != -1) {
           output.log("connection.onData", "Identifying quick!");
-          irc.privmsg("NickServ", "IDENTIFY " + config.pass);
+          irc.privmsg("NickServ", "IDENTIFY " + config.pass, true);
         }
       }
     }
