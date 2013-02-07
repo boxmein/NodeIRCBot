@@ -13,8 +13,8 @@ var irc = {
   action: function(channel, action) { // to send a /me action
     irc.ctcp(channel, "ACTION "+ action);
   },
-  privmsg: function(channel, message) { // To send a regular message to #chan or user
-    irc.raw("PRIVMSG " + channel + " :" + message);
+  privmsg: function(channel, message, hide) { // To send a regular message to #chan or user
+    irc.raw("PRIVMSG " + channel + " :" + message, hide);
   },
   notice: function(channel, message) {
     irc.raw("NOTICE " + channel + " :" + message);
