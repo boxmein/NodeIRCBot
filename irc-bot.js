@@ -10,7 +10,7 @@
 
 // IRC bot core
 
-// WARNING: BEFORE PASTING TO GIST REMOVE config.js
+// WARNING: BEFORE PASTING TO GIST REMOVE config.json
 var net = require("net");
 var http = require("http");
 var sys = require("sys");
@@ -55,21 +55,30 @@ var connection = {
       output.err("irc.onData", ircdata.command+" is not a command.");
   },
   onData: function(data) {
-    if(output.rawlogging)
+    if(output.rawlogging) // If raw IRC is being logged
         output.log("<>",data);
+
     if (data.indexOf("PRIVMSG ") != -1) { // Channel message
       var arr = data.split(' ');   // Creates an array with 
       var result = arr.splice(0,3);// ["hostmask", "command", "channel", "mess age"]
       result.push(arr.join(' '));
 
       var ircdata = {
-        hostmask : result[0].substring(1),                         // Sender's hostmask
-        channel  : result[2],                                      // Sender's channel
-        sender   : result[0].substring(1, result[0].indexOf("!")), // Sender's handle
-        message  : result[3].substring(1).trim(),                    // Full message
+        hostmask : result[0].substring(1),
+        channel  : result[2],
+        sender   : result[0].substring(1, result[0].indexOf("!")),
+        message  : result[3].substring(1).trim(),
+        messageType: 0 // Message type. 0 = Channel message. 1 = PM. 2 = CTCP message
       };
-      if (output.textlogging)
+      if (ircdata.channel == config.nick) { // Then he's PMing!
+        ircdata.channel = ircdata.sender;
+      }
+      if (/.+\x01.+\x01$/g.test(ircdata.message)) // CTCP messages go \x01 + message + \x01
+        ircdata.messageType = 2;
+      if (output.textlogging) // If text is being logged regularly
         output.chanmsg(ircdata);
+
+
       ircdata.args = ircdata.message.split(" ");
       if (ircdata.message.indexOf(commands.prefix) == 0) {
         connection.handleCommands(ircdata);
