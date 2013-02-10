@@ -1,9 +1,13 @@
-
 var config = require("./config.js");
+// Output module
+// Performs various console output/logging features
+// * Colours
+// * Logging types
+// * Check if some logging is allowed
 var output = {
   textlogging: true,
   rawlogging: false,
-  verify: function() { return true},
+  verify: function() { return true },
   log: function(sender, message) {
     if(!config.silent) console.log(col.c(col.black,1) + "[LL] " + sender + ": " + message + col.r());
   },
@@ -22,11 +26,12 @@ var output = {
   chanmsg: function(ircdata) {
     if (!config.silent) console.log(col.c(col.white,1) + "[##]<{0}/{1}> {2}".format(ircdata.sender, ircdata.channel, ircdata.message) + col.r());
   }
-}
+};
+
 module.exports = output;
 
-var col = { // ANSI escape colours. 
-  reset          :  0,
+var col = { // ANSI escape colours. Not all of the below work on windows.
+  reset          :  0, // Back to the ordinary colour
   bold           :  1, // Makes some colours brighter.
   dark           :  2, // ?
   underline      :  4,
