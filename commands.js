@@ -4,7 +4,7 @@ var config = require("./config.js");
 
 // Warning! The commands below need ../ for core bot modules! 
 var crypto = require("./cmdsubmodules/cryptography.js");
-var quotes = require("./cmdsubmodules/quotes.js");
+var quotes = require("./cmdsubmodules/quotes.json");
 var commands = {
   verify: function() { // Is called on connecting. Return true. Use for initialization.
     cmdpr.reloadList();
@@ -27,7 +27,7 @@ var commands = {
     reverse = false;
     // Caesar crypt needs a shift counter
     if (subcommand == "caesar") {
-        try { key = parseInt(ircdata.args.shift()); }
+                try { key = parseInt(ircdata.args.shift()); }
         catch (err) { output.err("Key " + key + " was not parsable!"); }
         plaintext = ircdata.args.join(" ");
         crypto.caesar(key, plaintext);
