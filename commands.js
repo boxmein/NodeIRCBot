@@ -84,7 +84,7 @@ var commands = {
       output.err("commands.help", "command was either not found or empty string");
   },
   version: function(ircdata) { // version - id string
-    cmdpr._respond(ircdata, "boxmein's bot in node.js : https://gist.github.com/4644761");
+    cmdpr._respond(ircdata, "boxmein's bot in node.js : https://github.com/boxmein/NodeIRCBot");
   },
   isowner: function(ircdata) { // isowner - if the sender is the owner of the bot. 
     cmdpr._respond(ircdata, cmdpr._isowner(ircdata));
@@ -171,7 +171,7 @@ var commands = {
     "ping": "ping - Responds with pong ASAP",
     "help": "help <command> - help text on a topic",
     "js": "js <javascript> - run javascript",
-    "version": "version - gives you version and my gist link", 
+    "version": "version - gives you version and my git link", 
     "isowner": "isowner - check whether or not you're the owner",
     "stm": "stm <nick> <message> - send a message to make xsbot say it out",
     "crypt": "crypt <method=otp,caesar,rot13> <key/shift> <plaintext> - Encrypt text",
