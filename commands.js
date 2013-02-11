@@ -1,6 +1,7 @@
 
 var output = require("./output.js");
 var config = require("./config.js");
+var Sandbox = require("sandbox"), s = new Sandbox();
 
 // Warning! The commands below need ../ for core bot modules! 
 var crypto = require("./cmdsubmodules/cryptography.js");
@@ -14,7 +15,14 @@ var commands = {
   setIRC: function(ircc) { commands.irc = ircc; },
   prefix: "#",
   quote: function(ircdata) {
-    var index = Math.floor(Math.random() * 10) % quotes.q.length;
+    if (ircdata.args[0]) {
+      try { var index = parseInt(ircdata.args[0]); }
+      catch (err) { output.err("Inserted value was not an int! :" + ircdata.args[0]);
+                  var index = Math.floor(Math.random() * 10) % quotes.q.length; }
+    }
+    else {
+      var index = Math.floor(Math.random() * 10) % quotes.q.length;
+    }
     var current = quotes.q[index];
     output.log("commands.quote", "Quote index:" + current);
     output.log("commands.quote", "Sending quote: " + current);
@@ -96,6 +104,15 @@ var commands = {
       output.log("commands.js", "JS METHOD CALL ENDED");
       cmdpr._respond(ircdata, response);
     }
+    else {
+      output.log("commands.js", "Entering SAFE BLOCK!");
+      try {
+        cmdpr.sandboxJS(ircdata);
+      }
+      catch (err) {
+        output.err("commands.js", "Error in sandbox: " + err);
+      }
+    }
   },
   stm: function(ircdata) { // sendtomniip <nick> <msg> - makes a HTTP request as mniip's
     output.log("commands.sendtomniip", "Starting HTTP request");
@@ -137,6 +154,14 @@ var commands = {
     }
     output.log("commands.sendtomniip", "Ending function body");
   },
+  tptthumb: function(ircdata) {
+    var index = ircdata.args[0];
+    if (/[0-9]{1,10}/.test(index)) {
+      cmdpr._respond(ircdata, "http://static.powdertoy.co.uk/" + index + ".png");
+    }
+    else
+      output.err("commands.tptthumb", "Sent ID was not a number: " + index);
+  },
   cmdlist: {
     // Using this list is mandatory now! 
     "help": "help <cmd> - shows you help on a command",
@@ -145,12 +170,14 @@ var commands = {
     "list": "list - lists all commands",
     "ping": "ping - Responds with pong ASAP",
     "help": "help <command> - help text on a topic",
-    "js": "js <javascript> - run javascript [owner only]",
+    "js": "js <javascript> - run javascript",
     "version": "version - gives you version and my gist link", 
     "isowner": "isowner - check whether or not you're the owner",
     "stm": "stm <nick> <message> - send a message to make xsbot say it out",
     "crypt": "crypt <method=otp,caesar,rot13> <key/shift> <plaintext> - Encrypt text",
-    "quote": "quote - Returns a random quote from my database"
+    "quote": "quote - Returns a random quote from my database",
+    // "tptversion": "tptversion - Returns the current The Powder Toy version",
+    "tptthumb": "tptthumb <id> - Returns a TPT thumbnail ID"
   },
 };
 module.exports = commands;
@@ -178,6 +205,14 @@ var cmdpr = {
     for (var k in commands.cmdlist)
       cmdpr.commands.push(k);
     output.log("cmdpr.reloadList", "Command list reloaded.");
+  },
+  sandboxJS: function(ircdata) {
+    output.log("cmdpr.sandboxJS", "Running sandboxed JS interpreter...");
+    var js = ircdata.args.join(" ");
+    output.log("cmdpr.sandboxJS", "JS: " + js);
+    s.run(js, function(out) {
+      cmdpr._respond(ircdata, "[return]: " + out.result);
+    });
   },
   commands: []
 };
