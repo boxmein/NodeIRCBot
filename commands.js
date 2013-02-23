@@ -1,11 +1,14 @@
 
+var http = require("http");
 var output = require("./output.js");
 var config = require("./config.js");
 var Sandbox = require("sandbox"), s = new Sandbox();
+var DOMParser = require("xmldom").DOMParser;
 
 // Warning! The commands below need ../ for core bot modules! 
 var crypto = require("./cmdsubmodules/cryptography.js");
 var quotes = require("./cmdsubmodules/quotes.json");
+//var nickometer = require("./cmdsubmodules/nickometer.js");
 var commands = {
   verify: function() { // Is called on connecting. Return true. Use for initialization.
     cmdpr.reloadList();
@@ -18,10 +21,10 @@ var commands = {
     if (ircdata.args[0]) {
       try { var index = parseInt(ircdata.args[0]); }
       catch (err) { output.err("Inserted value was not an int! :" + ircdata.args[0]);
-                  var index = Math.floor(Math.random() * 10) % quotes.q.length; }
+                  var index = Math.floor(Math.random() * 20) % quotes.q.length; }
     }
     else {
-      var index = Math.floor(Math.random() * 10) % quotes.q.length;
+      var index = Math.floor(Math.random() * 20) % quotes.q.length;
     }
     var current = quotes.q[index];
     output.log("commands.quote", "Quote index:" + current);
@@ -116,19 +119,8 @@ var commands = {
   },
   stm: function(ircdata) { // sendtomniip <nick> <msg> - makes a HTTP request as mniip's
     output.log("commands.sendtomniip", "Starting HTTP request");
-    if (ircdata.args[0] != "") {
-      var message = "";
-      if (ircdata.args.length > 2) {
-        message = ircdata.args.splice(1, ircdata.args.length -1).join(" ");
-        output.log("commands.sendtomniip", "(0) message: " + message);
-      }
-      else if(ircdata.args[1] != "" && ircdata.args[1] != undefined) {
-        message = ircdata.args[1];
-        output.log("commands.sendtomniip", "(1) message: " + message);
-      }
-      else {
-        message = "disregard that, I suck cocks";
-      }
+    var message = ircdata.args.join(" ");
+    if (message != "") {
       var req = http.request(
         // Object with all the details
       {
@@ -154,6 +146,59 @@ var commands = {
     }
     output.log("commands.sendtomniip", "Ending function body");
   },
+  lastfm: function(ircdata) {
+    var endstr = "";
+    function parseReceived(data) {
+      output.log("commands.lastfm", "Parsing data: " + data);
+      var xmlobj = {};
+      try { 
+        var xmlparse = new DOMParser();
+        xmlobj = xmlparse.parseFromString(data);
+        
+      } 
+      catch(err) { output.err("commands.lastfm", "error parsing XML: "+err); return;}
+      
+      if (xmlobj.getElementsByTagName("lfm")[0].getAttribute("status") != "ok") {
+        output.err("commands.lastfm", "Returned bad status " + xmlobj.getElementsByTagName("lfm")[0].status);
+        return;
+      }
+      var track = xmlobj.getElementsByTagName("track")[0];
+      endstr += (track.nowplaying == "true" ? "Now Playing: " : "Last Played: ");
+      endstr += track.getElementsByTagName("artist")[0].textContent + " - ";
+      endstr += track.getElementsByTagName("name")[0].textContent; 
+      output.log("commands.lastfm", "End string: " + endstr);
+      cmdpr._respond(ircdata, endstr);
+
+    }
+    var username = ircdata.args[0] || false;
+    if (!username) return;
+    var req = http.request( 
+      {
+        hostname: "ws.audioscrobbler.com",
+        path: "/2.0/?method=user.getRecentTracks&limit=2&api_key="+config.lastFM.apiKey+"&user="+username,
+        method: "GET",
+        headers: {
+          "User-Agent": "boxnode IRC Bot (@ "+ config.server+", contact " + config.ownerEmail + ")",
+          "X-Powered-By": "Node.js v0.8.16",
+          "Accept": "application/json"
+        }
+      }, function(response) {
+        output.inn("statusCode: " + response.statusCode);
+        if (response.statusCode == 200)
+        { 
+          output.log("commands.lastfm","Data received: parsing.");
+          response.setEncoding("utf8");
+          response.on("data", function(chunk) {
+            parseReceived(chunk);
+          });
+        }
+        else 
+          output.err("commands.lastfm", "Response not 200 ;_;"); 
+    });
+    req.on("error", function(evt) { output.err("commands.lastfm", evt.message); });
+    req.end();
+  },
+  lfm: function(ircdata) { commands.lastfm(ircdata); },
   tptthumb: function(ircdata) {
     var index = ircdata.args[0];
     if (/[0-9]{1,10}/.test(index)) {
@@ -177,7 +222,9 @@ var commands = {
     "crypt": "crypt <method=otp,caesar,rot13> <key/shift> <plaintext> - Encrypt text",
     "quote": "quote - Returns a random quote from my database",
     // "tptversion": "tptversion - Returns the current The Powder Toy version",
-    "tptthumb": "tptthumb <id> - Returns a TPT thumbnail ID"
+    "tptthumb": "tptthumb <id> - Returns a TPT thumbnail ID",
+    "lastfm": "lastfm <nickname> - returns what the user is now playing",
+    "lfm": "see `lastfm`"
   },
 };
 module.exports = commands;
