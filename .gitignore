@@ -1,4 +1,5 @@
-*.bat
+
 *.min.js
 config.js
 config.min.js
+last.log

@@ -1,7 +1,3 @@
-
-// @language ECMASCRIPT5
-// ^Closure thing
-
 // When everything falls apart
 // Just don't back down
 // Just keep running
@@ -10,7 +6,6 @@
 
 // IRC bot core
 
-// WARNING: BEFORE PASTING TO GIST REMOVE config.json
 var net = require("net");
 var http = require("http");
 var sys = require("sys");
@@ -28,16 +23,15 @@ var allOK = commands.verify() && config.verify() && output.verify() && irc.verif
 var connection = {
   client: new net.Socket(),
   PORT: 6667,
-  HOST: "irc.freenode.net",
-  textlogging: true, // If we log regular messages like <nick/#chan> Message
-  rawlogging: false,
+  HOST: config.server,
   onConnected: function() { // we are connected!
     irc.setClient(connection.client);
     commands.setIRC(irc);
-    console.log(allOK ? "[##] All modules loaded" : "\033]31;1m[EE] Some modules not found") ;
+    output.log("",allOK ? "[##] All modules loaded" : "\033]31;1m[EE] Some modules not found") ;
     if (!allOK) process.exit(1);
     output.log("irc.onConnected", "Connection successful");
     output.announce("Press q + enter to exit program.");
+
     setTimeout(function() {
       irc.raw("NICK " + config.nickname);
       irc.raw("USER " + config.nickname + " 8 * :" + config.realname);
@@ -48,46 +42,62 @@ var connection = {
     output.inn(ircdata.sender + "(in " + ircdata.channel +") called for: " + ircdata.message);
     ircdata.command = ircdata.args.shift().substring(1).trim().replace(/[^A-Za-z]+?/gi, ""); 
     // commands.cmdlist is now chief in executive for testing whether a command exists
-    if (commands.cmdlist.hasOwnProperty(ircdata.command)) {
-      commands[ircdata.command](ircdata); 
+    try {
+      if (commands.cmdlist.hasOwnProperty(ircdata.command)) {
+        commands[ircdata.command](ircdata); 
+      }
+      else 
+        output.err("irc.onData", ircdata.command+" is not a command.");
     }
-    else 
-      output.err("irc.onData", ircdata.command+" is not a command.");
+    catch (err) 
+    {}
   },
   onData: function(data) {
-    if(output.rawlogging) // If raw IRC is being logged
-        output.log("<>",data);
+    if(output.rawlogging)
+        output.log("",data); // output raw IRC
 
-    if (data.indexOf("PRIVMSG ") != -1) { // Channel message
-      var arr = data.split(' ');   // Creates an array with 
-      var result = arr.splice(0,3);// ["hostmask", "command", "channel", "mess age"]
+    // Channel messages and commands
+    if (data.indexOf("PRIVMSG ") != -1) { 
+
+      // 1. Cut up data into a nicer array
+      var arr = data.split(' ');   
+      var result = arr.splice(0,3);
       result.push(arr.join(' '));
+      // result = ["hostmask", "command", "channel", "mess age"]
 
+      // 2. Create the ever-so-useful ircdata object
       var ircdata = {
         hostmask : result[0].substring(1),
         channel  : result[2],
         sender   : result[0].substring(1, result[0].indexOf("!")),
         message  : result[3].substring(1).trim(),
-        messageType: 0 // Message type. 0 = Channel message. 1 = PM. 2 = CTCP message
+        messageType: 0 // 0000 = Channel message. 0001 = PM. 0010 = CTCP message
       };
+
+      // 3. messageType + special occasions
       if (ircdata.channel == config.nick) { // Then he's PMing!
+        ircdata.messageType |= 1;
         ircdata.channel = ircdata.sender;
       }
       if (/.+\x01.+\x01$/g.test(ircdata.message)) // CTCP messages go \x01 + message + \x01
-        ircdata.messageType = 2;
+        ircdata.messageType |= 2;
+      
+      // 4. Logging
       if (output.textlogging) // If text is being logged regularly
         output.chanmsg(ircdata);
 
-
+      // 5. Handle commands
       ircdata.args = ircdata.message.split(" ");
       if (ircdata.message.indexOf(commands.prefix) == 0) {
         connection.handleCommands(ircdata);
       }
     }
-    else if(data.indexOf("PING") != -1) { // Ping-pong handling
-      irc.raw("PONG", true); // Disables its logging.
+    // Ping-pong handling
+    else if(data.indexOf("PING") != -1) {
+      irc.raw("PONG", true); // true disables it being logged
     }
-    else if(data.indexOf("NOTICE") != -1) { // Server notices
+    // Notices?
+    else if(data.indexOf("NOTICE") != -1) { 
       var arr = data.split(' ');   // Creates an array with 
       var result = arr.splice(0,3);// ["hostmask", "command", "channel", "mess age"]
       result.push(arr.join(" ").trim());
@@ -99,6 +109,8 @@ var connection = {
       }
       if (noticedata.hostmask.indexOf("freenode.net") == -1)
         output.inn("-"+noticedata.sender+"- :" +noticedata.message.trim());
+
+      // NickServ identification when SASL fails
       if (noticedata.sender == "NickServ") {
         output.log("connection.onData", "NickServ sent me");
         if (noticedata.message.indexOf("identify") != -1) {
@@ -108,8 +120,9 @@ var connection = {
       }
     }
   },
-  onConnectionClose: function() { // If the server disconnects us
-    output.err("irc.onConnectionClose", "Disconnected ()");
+  // If we get dumped
+  onConnectionClose: function() {
+    output.log("irc.onConnectionClose", "Disconnected ()");
     process.exit(0);
   }
 };
