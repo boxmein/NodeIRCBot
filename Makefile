@@ -2,11 +2,14 @@
 SHELL=C:/Windows/System32/cmd.exe
 JSC := closure
 # I do this because *.js would match each file twice. (minified + regular!)
-JSMINFILES = $(wildcard *.min.js)
-JSFILES=$(JSMINFILES:.min.js=.js)
+JSFILES=$(wildcard *.js)
+JSMINFILES = $(JSFILES:.js=.min.js)
+MINDIR := minified/
 
 
-all: minify
+all: 
+	touch $(MINDIR)$(JSMINFILES)
+	minify
 minify: $(JSFILES)
 # Minify & replace dependencies with minified variants
 %.js: %.min.js
@@ -14,7 +17,10 @@ minify: $(JSFILES)
 	sed -e "s/.js/.min.js/g" $< > $<.tmp
 	mv $(TMPDIR)$<.tmp $(MINDIR)$<
 clean: 
-	rm $(JSFILES:.js=.min.js)
+	rmdir $(MINDIR)
+
+
+
 # Careful with compiling with this! 
 # Occasionally generates 800+ MB files
 monolith: 
