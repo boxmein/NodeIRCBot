@@ -36,9 +36,10 @@ var connection = {
   PORT: 6667,
   HOST: _.config.server,
   onConnected: function() { // we are connected!
-    _.commands.init(_);
-      _.output.init(_);
-         _.irc.init(_);
+    
+      _.output.init(_); // output > everything
+      _.commands.init(_);
+      _.irc.init(_);
     _.irc.setClient(connection.client);
 
     _.output.log("irc.onConnected", "Connection successful");
