@@ -6,55 +6,63 @@
 
 // IRC bot core
 
-var net = require("net");
-var http = require("http");
-var sys = require("sys");
 
-var commands = require("./commands.js"); // Channel commands
-var config   = require("./config.js");   // Configuration
-var output   = require("./output.js");   // Output formatting
-var irc      = require("./irc.js");      // IRC wrappers
+// [ Module requirements]
 
-output.log("","[--] -------------------------------");
-output.log("","[--] Boxmein's node IRC bot started.");
-output.log("","[--] -------------------------------");
+var _ = {
+  // Essentials
+  net : require("net"),
+  http : require("http"),
+  sys : require("sys"),
+  // Modules
+  config   : require("./config.js"),   // Configuration
+  commands : require("./commands.js"), // Channel commands
+  output   : require("./output.js"),   // Output formatting
+  irc      : require("./irc.js"),      // IRC wrappers
+  // Command specialties
+  Sandbox  : require("sandbox"),       // Javascript sandbox
+  DOMParser: require("xmldom").DOMParser // XML DOM traversal
+}
 
-var allOK = commands.verify() && config.verify() && output.verify() && irc.verify();
+// [/Module requirements]
+
+
+console.log("-------------------------------");
+console.log("Boxmein's node IRC bot started.");
+console.log("-------------------------------");
+
 var connection = {
-  client: new net.Socket(),
+  client: new _.net.Socket(),
   PORT: 6667,
-  HOST: config.server,
+  HOST: _.config.server,
   onConnected: function() { // we are connected!
-    irc.setClient(connection.client);
-    commands.setIRC(irc);
-    output.log("",allOK ? "[##] All modules loaded" : "\033]31;1m[EE] Some modules not found") ;
-    if (!allOK) process.exit(1);
-    output.log("irc.onConnected", "Connection successful");
-    output.announce("Press q + enter to exit program.");
+    _.commands.init(_);
+      _.output.init(_);
+         _.irc.init(_);
+    _.irc.setClient(connection.client);
+
+    _.output.log("irc.onConnected", "Connection successful");
+    _.output.announce("Press q + enter to exit program.");
 
     setTimeout(function() {
-      irc.raw("NICK " + config.nickname);
-      irc.raw("USER " + config.nickname + " 8 * :" + config.realname);
-      irc.raw("JOIN " + config.channels);
+      _.irc.raw("NICK " + _.config.nickname);
+      _.irc.raw("USER " + _.config.nickname + " 8 * :" + _.config.realname);
+      _.irc.raw("JOIN " + _.config.channels);
     }, 7000);
   },
   handleCommands: function(ircdata) {
-    output.inn(ircdata.sender + "(in " + ircdata.channel +") called for: " + ircdata.message);
+    _.output.inn(ircdata.sender + "(in " + ircdata.channel +") called for: " + ircdata.message);
     ircdata.command = ircdata.args.shift().substring(1).trim().replace(/[^A-Za-z]+?/gi, ""); 
     // commands.cmdlist is now chief in executive for testing whether a command exists
     try {
-      if (commands.cmdlist.hasOwnProperty(ircdata.command)) {
-        commands[ircdata.command](ircdata); 
-      }
-      else 
-        output.err("irc.onData", ircdata.command+" is not a command.");
+      _.commands.exec(ircdata);
     }
     catch (err) 
-    {}
+    { _.output.err("command:" + ircdata.command, err); }
   },
   onData: function(data) {
-    if(output.rawlogging)
-        output.log("",data); // output raw IRC
+    if(_.output.rawlogging)
+        _.output.log("",data); // output raw IRC
 
     // Channel messages and commands
     if (data.indexOf("PRIVMSG ") != -1) { 
@@ -75,7 +83,7 @@ var connection = {
       };
 
       // 3. messageType + special occasions
-      if (ircdata.channel == config.nick) { // Then he's PMing!
+      if (ircdata.channel == _.config.nick) { // Then he's PMing!
         ircdata.messageType |= 1;
         ircdata.channel = ircdata.sender;
       }
@@ -83,18 +91,18 @@ var connection = {
         ircdata.messageType |= 2;
       
       // 4. Logging
-      if (output.textlogging) // If text is being logged regularly
-        output.chanmsg(ircdata);
+      if (_.output.textlogging) // If text is being logged regularly
+        _.output.chanmsg(ircdata);
 
       // 5. Handle commands
       ircdata.args = ircdata.message.split(" ");
-      if (ircdata.message.indexOf(commands.prefix) == 0) {
+      if (ircdata.message.indexOf(_.commands.prefix) == 0) {
         connection.handleCommands(ircdata);
       }
     }
     // Ping-pong handling
     else if(data.indexOf("PING") != -1) {
-      irc.raw("PONG", true); // true disables it being logged
+      _.irc.raw("PONG", true); // true disables it being logged
     }
     // Notices?
     else if(data.indexOf("NOTICE") != -1) { 
@@ -108,21 +116,21 @@ var connection = {
 
       }
       if (noticedata.hostmask.indexOf("freenode.net") == -1)
-        output.inn("-"+noticedata.sender+"- :" +noticedata.message.trim());
+        _.output.inn("-"+noticedata.sender+"- :" +noticedata.message.trim());
 
       // NickServ identification when SASL fails
       if (noticedata.sender == "NickServ") {
-        output.log("connection.onData", "NickServ sent me");
+        _.output.log("connection.onData", "NickServ sent me");
         if (noticedata.message.indexOf("identify") != -1) {
-          output.log("connection.onData", "Identifying quick!");
-          irc.privmsg("NickServ", "IDENTIFY " + config.pass, true);
+          _.output.log("connection.onData", "Identifying quick!");
+          _.irc.privmsg("NickServ", "IDENTIFY " + _.config.pass, true);
         }
       }
     }
   },
   // If we get dumped
   onConnectionClose: function() {
-    output.log("irc.onConnectionClose", "Disconnected ()");
+    _.output.log("irc.onConnectionClose", "Disconnected ()");
     process.exit(0);
   }
 };
@@ -160,17 +168,17 @@ stdin.on('data', function(data) {
   var cmd  = args.shift();
   // output.log("stdin.onData", "received input: " + data);
        if(cmd == "say") 
-    irc.privmsg(args.shift(), args.join(" "));
+    _.irc.privmsg(args.shift(), args.join(" "));
   else if(cmd == "raw") 
-    irc.raw(args.join(" "));
+    _.irc.raw(args.join(" "));
   else if(cmd == "join") 
-    irc.join(args.shift());
+    _.irc.join(args.shift());
   else if(cmd == "part") 
-    irc.part(args.shift());
+    _.irc.part(args.shift());
   else if(cmd == "quit")
-    irc.quit();
+    _.irc.quit();
   else if(cmd == "tlogging")
-    config.textlogging = !config.textlogging;
+    _.config.textlogging = !_.config.textlogging;
   else if(cmd == "help") 
   {
     console.log(

@@ -1,30 +1,39 @@
-var config = require("./config.js");
+_ = {};
 // Output module
 // Performs various console output/logging features
 // * Colours
 // * Logging types
 // * Check if some logging is allowed
 var output = {
+  
   textlogging: true,
   rawlogging: false,
-  verify: function() { return true },
+  init: function(underscore) {
+    _ = underscore;
+    _.output.log("", "Initialized output.js");
+  },
   log: function(sender, message) {
-    if(!config.silent) console.log(col.c(col.black,1) + "[LL] " + sender + ": " + message.trim() + col.r());
+    if(!_.config.silent) 
+      console.log(col.c(col.black,1) + "[LL] " + sender + ": " + message.trim() + col.r());
   },
   err: function(sender, message) {
     console.log(col.c(col.red, 1) + "[EE] " + sender + ": " + message.trim() + col.r());
   },
   out: function(sender, message) {
-    if(!config.silent) console.log(col.c(col.black, 1) + "[>>] " + sender + ": " + message.trim() + col.r());
+    if(!_.config.silent) 
+      console.log(col.c(col.black, 1) + "[>>] " + sender + ": " + message.trim() + col.r());
   },
   inn: function(message) { // typo is on purpose
-    if(!config.silent) console.log("[<<] " + message.trim() + col.r());
+    if(!_.config.silent) 
+      console.log("[<<] " + message.trim() + col.r());
   },
   announce: function(message) {
-    if (!config.silent) console.log("[--] --- " + message.trim() + " ---" + col.r())
+    if (!_.config.silent) 
+      console.log("[--] --- " + message.trim() + " ---" + col.r())
   },
   chanmsg: function(ircdata) {
-    if (!config.silent) console.log(col.c(col.white,1) + "[##]<{0}/{1}> {2}".format(ircdata.sender, ircdata.channel, ircdata.message) + col.r());
+    if (!_.config.silent) 
+      console.log(col.c(col.white,1) + "[##]<{0}/{1}> {2}".format(ircdata.sender, ircdata.channel, ircdata.message) + col.r());
   }
 };
 

@@ -1,8 +1,10 @@
 
-var output = require("./output.js");
-var config = require("./config.js");
+var _ = {};
 var irc = {
-  verify: function() {return true},
+  init: function(underscore) {
+    _ = underscore;
+    _.output.log("", "Initialized irc.js");
+  },
   setClient: function(client) {
     irc.client = client;
   },
@@ -27,16 +29,16 @@ var irc = {
   },
   quit: function() {
     var index = (Math.random()) % 25;
-    output.log("irc.quit", "index: " + index + "; message: " + irc.quitmsgs[index]);
+    _.output.log("irc.quit", "index: " + index + "; message: " + irc.quitmsgs[index]);
     irc.privmsg("#powder-bots", irc.quitmsgs[index]); // ALWAYS UNDEFINED ;_;
-    irc.raw("QUIT :"+config.quitmsg);
-    setTimeout(function() {process.exit(0);}, 5000);
+    irc.raw("QUIT :" + _.config.quitmsg);
+    setTimeout(function() { process.exit(0); }, 5000);
   },
   raw: function(data, hide) { // To send raw IRC data (hide hides the sending box, optionally)
 
     irc.client.write(data + "\n", "ascii", function() {
       if(!hide)
-        output.out("raw",data);
+        _.output.out("raw",data);
     });
   },
   quitmsgs : [
