@@ -1,6 +1,6 @@
 var _ = {};
 module.exports = {
-	helptext: "time - loltime", 
+	helptext: "time - time is but a concept, but it's a bloody good one", 
 	enable: 1,
 	getHelp: function() { return this.helptext; },
 	// Return anything but false when something went wrong
