@@ -37,9 +37,9 @@ var connection = {
   HOST: _.config.server,
   onConnected: function() { // we are connected!
     
-      _.output.init(_); // output > everything
-      _.commands.init(_);
-      _.irc.init(_);
+    _.output.init(_); // output > everything
+    _.commands.init(_);
+    _.irc.init(_);
     _.irc.setClient(connection.client);
 
     _.output.log("irc.onConnected", "Connection successful");
@@ -58,8 +58,12 @@ var connection = {
     try {
       _.commands.exec(ircdata);
     }
-    catch (err) 
-    { _.output.err("command:" + ircdata.command, err); }
+    catch (err) { 
+      _.output.err("command:" + ircdata.command, err); 
+      if (_.config.loud) {
+        _.commands.respond(ircdata, err);
+      }
+    }
   },
   onData: function(data) {
     if(_.output.rawlogging)
