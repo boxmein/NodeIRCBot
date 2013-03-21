@@ -7,11 +7,13 @@ var commands = {
 	init: function(underscore) {
 		_ = underscore;
 		try { 
-			this.load("hello", "./modules/hello.js");
-			this.load("eat",   "./modules/eat.js");
-			this.load("list",  "./modules/list.js");
-			this.load("owner", "./modules/owner.js");
-			this.load("help",  "./modules/help.js");
+			this.load("hello", "./modules/hello.js"); // Hello world
+			this.load("eat",   "./modules/eat.js");   // Feasting upon users
+			this.load("list",  "./modules/list.js");  // Listing commands
+			this.load("owner", "./modules/owner.js"); // Owner commands
+			this.load("help",  "./modules/help.js");  // Help texts
+			this.load("bug",   "./modules/bug.js");   // Bug handling (fake)
+			this.load("js",    "./modules/inline-js.js"); // Javascript
 			// Load commands before this next line
 			this.cmds.list.setList(this.generateCmdList()); // Give cmds the list
 			this.cmds.help.setHelp(this.helps);// Give help the object that lists all helpings
