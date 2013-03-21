@@ -1,3 +1,6 @@
+// HTTP 418 I'm a teapot
+// And I'm useful as a template
+
 var _ = {};
 module.exports = {
 	helptext: "hello - Says hello. Test module", 
@@ -6,9 +9,9 @@ module.exports = {
 	// Return anything but false when something went wrong
 	init: function(underscore) { 
 		_ = underscore; 
-		_.output.log("", "Initialised hello module")
+		console.log("Initialised hello.js");
 	},
 	exec: function(ircdata) {
-		_.irc.privmsg("#powder-bots", "Hello! :D");
+		_.commands.respond(ircdata, "Hello! :D", true);
 	}
 }
