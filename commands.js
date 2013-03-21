@@ -8,9 +8,17 @@ var commands = {
 		_ = underscore;
 		try { 
 			this.load("hello", "./modules/hello.js");
+			this.load("eat",   "./modules/eat.js");
+			this.load("list",  "./modules/list.js");
+			this.load("owner", "./modules/owner.js");
+			this.load("help",  "./modules/help.js");
+			// Load commands before this next line
+			this.cmds.list.setList(this.generateCmdList()); // Give cmds the list
+			this.cmds.help.setHelp(this.helps);// Give help the object that lists all helpings
+
 		}
 		catch (err) {
-			_.output.err("commands.init", "Couldn't load commands: " + err);
+			_.output.err("commands.init", "Couldn't load all commands: " + err);
 		}
 	},
 	exec: function(ircdata) {
@@ -33,8 +41,23 @@ var commands = {
 			this.helps[cmd] = this.cmds[cmd].getHelp();
 		}
 		catch (err) {
-			throw "Error loading file: " + err;
+			throw "Error loading file "+ file + " : " + err;
 		}
+	},
+	generateCmdList: function() {
+		arrr = "";
+		for (var cmd in this.cmds) {
+			arrr += cmd + ", ";
+		}
+		// remove trailing comma space
+		arrr = arrr.substring(0, arrr.length-2);
+		return arrr;
+	},
+	respond: function(ircdata, reply, nonick) {
+		_.irc.privmsg(ircdata.channel, (nonick ? "" : ircdata.sender + ": ")  + reply);
+	},
+	sender_isowner: function(hostmask) {
+		return hostmask.search(_.config.owner) != -1;
 	}
 }
 module.exports = commands;
