@@ -75,5 +75,9 @@ module.exports = {
 			catch (err) {}
 			_.config[configrule] = configvalue;
 		}
+		else if (subcmd == "relist")
+		{
+			_.commands.cmds.list.setList(_.commands.generateCmdList());
+		}
 	}
 }
