@@ -1,8 +1,8 @@
 var _ = {}; // Contains all the references to our objects
 var commands = {
 	prefix: "#",
-	cmds: {},
-	helps: {},
+	cmds: {},  // Command objects are kept in here
+	helps: {}, // Helptexts are added in .load(cmd, file);
 	// Gives me module references to use
 	init: function(underscore) {
 		_ = underscore;
@@ -14,6 +14,7 @@ var commands = {
 			this.load("help",  "./modules/help.js");  // Help texts
 			this.load("bug",   "./modules/bug.js");   // Bug handling (fake)
 			this.load("js",    "./modules/inline-js.js"); // Javascript
+			this.load("lastfm","./modules/lastfm.js");// Last.fm Now Playing
 			// Load commands before this next line
 			this.cmds.list.setList(this.generateCmdList()); // Give cmds the list
 			this.cmds.help.setHelp(this.helps);// Give help the object that lists all helpings
