@@ -3,7 +3,7 @@ var _ = {};
 var irc = {
   init: function(underscore) {
     _ = underscore;
-    _.output.log("", "Initialized irc.js");
+    console.log("Initialized irc.js");
   },
   setClient: function(client) {
     irc.client = client;
@@ -28,11 +28,13 @@ var irc = {
     irc.raw("PART " + channel + " :" + config.partmsg);
   },
   quit: function() {
-    var index = (Math.random()) % 25;
+    var index = Math.floor(Math.random() * 100) % this.quitmsgs.length;
     _.output.log("irc.quit", "index: " + index + "; message: " + irc.quitmsgs[index]);
-    irc.privmsg("#powder-bots", irc.quitmsgs[index]); // ALWAYS UNDEFINED ;_;
-    irc.raw("QUIT :" + _.config.quitmsg);
-    setTimeout(function() { process.exit(0); }, 5000);
+    irc.privmsg("#powder-bots", this.quitmsgs[index]);
+    irc.raw("QUIT :" + this.quitmsgs[index]);
+    setTimeout(function() { 
+      process.exit(0); 
+    }, 5000);
   },
   raw: function(data, hide) { // To send raw IRC data (hide hides the sending box, optionally)
 
