@@ -15,9 +15,9 @@ var _ = {
   http : require("http"),
   sys : require("sys"),
   // Modules
+  output   : require("./output.js"),   // Output formatting
   config   : require("./config.js"),   // Configuration
   commands : require("./commands.js"), // Channel commands
-  output   : require("./output.js"),   // Output formatting
   irc      : require("./irc.js"),      // IRC wrappers
   // Command specialties
   Sandbox  : require("sandbox"),       // Javascript sandbox
@@ -107,7 +107,8 @@ var connection = {
     }
     // Ping-pong handling
     else if(data.indexOf("PING") != -1) {
-      _.irc.raw("PONG", true); // true disables it being logged
+      var pongtext = data.split(" ")[1] || ":00000000";
+      _.irc.raw("PONG " + pongtext, true); // true disables it being logged
     }
     // Notices?
     else if(data.indexOf("NOTICE") != -1) { 
