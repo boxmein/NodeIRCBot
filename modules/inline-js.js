@@ -25,9 +25,12 @@ module.exports = {
 		}
 		else {
 			// Peasants get the sandbox! >:C
-			sand.run("(function() {" + js + "})();", function(out) {
-      	_.commands.respond(ircdata, "R: " + out.result);
-    	});
+			runSand(ircdata, js);
 		}
+	},
+	runSand: function(ircdata, js) {
+		sand.run("(function() {" + js + "})();", function(out) {
+      	_.commands.respond(ircdata, "R: " + out.result);
+  	});	
 	}
 }
