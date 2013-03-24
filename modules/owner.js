@@ -54,7 +54,7 @@ module.exports = {
 			else
 				scriptfile = script;
 			// If error then caught in irc-bot.js
-			_.commands.load(scriptfile, script);
+			_.commands.load(script, scriptfile);
 		}
 		//
 		// #owner config <key> [value] - returns <key>'s value or sets <key> to [value]
