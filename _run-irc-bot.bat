@@ -2,6 +2,6 @@
 :a 
 cls
 node irc-bot.js
-type last.log >NUL
+REM type last.log >NUL
 pause
 goto a
