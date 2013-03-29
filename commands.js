@@ -15,6 +15,8 @@ var commands = {
 			this.load("bug",   "./modules/bug.js");   // Bug handling (fake)
 			this.load("js",    "./modules/inline-js.js"); // Javascript
 			this.load("lastfm","./modules/lastfm.js");// Last.fm Now Playing
+			this.load("quote", "./modules/quotes.js");// Quotes
+		  this.load("admin", "./modules/admin.js"); // Admin commands (weaker than owner)
 			// Load commands before this next line
 			this.cmds.list.setList(this.generateCmdList()); // Give cmds the list
 			this.cmds.help.setHelp(this.helps);// Give help the object that lists all helpings
@@ -61,6 +63,12 @@ var commands = {
 	},
 	sender_isowner: function(hostmask) {
 		return hostmask.search(_.config.owner) != -1;
+	},
+	cleanup_query: function(query) {
+		if (query && typeof query == "string") 
+			return query.trim().replace(/[^A-Za-z]+?/gi, ""); 
+		else
+			cleanup_query(""+query);
 	}
 }
 module.exports = commands;
