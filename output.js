@@ -13,21 +13,26 @@ var output = {
     _.output.log("", "Initialized output.js");
   },
   log: function(sender, message) {
+    if (typeof message !== "string") message = ""+message;
     if(!_.config.silent) 
       console.log(col.c(col.black,1) + "[LL] " + sender + ": " + message.trim() + col.r());
   },
   err: function(sender, message) {
+    if (typeof message !== "string") message = ""+message;
     console.log(col.c(col.red, 1) + "[EE] " + sender + ": " + message.trim() + col.r());
   },
   out: function(sender, message) {
+    if (typeof message !== "string") message = ""+message;
     if(!_.config.silent) 
       console.log(col.c(col.black, 1) + "[>>] " + sender + ": " + message.trim() + col.r());
   },
   inn: function(message) { // typo is on purpose
+    if (typeof message !== "string") message = ""+message;
     if(!_.config.silent) 
       console.log("[<<] " + message.trim() + col.r());
   },
   announce: function(message) {
+    if (typeof message !== "string") message = ""+message;
     if (!_.config.silent) 
       console.log("[--] --- " + message.trim() + " ---" + col.r())
   },
