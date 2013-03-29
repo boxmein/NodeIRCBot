@@ -14,7 +14,7 @@ module.exports = {
 		var js = ircdata.args.join(" ");
 		if (_.commands.sender_isowner(ircdata.hostmask)) {
 			if (ircdata.args[0] && ircdata.args[0] === "sandbox")
-				ircdata.args.shift() && runSand(ircdata, js);
+				ircdata.args.shift() && this.runSand(ircdata, js);
 			// Owner gets full access
 			var response = "";
 			try {
