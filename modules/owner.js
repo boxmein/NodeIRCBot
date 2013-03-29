@@ -75,9 +75,53 @@ module.exports = {
 			catch (err) {}
 			_.config[configrule] = configvalue;
 		}
+		//
+		// #owner relist - regenerates the command list
+		//
 		else if (subcmd == "relist")
 		{
 			_.commands.cmds.list.setList(_.commands.generateCmdList());
 		}
+		//
+		// #owner quit - makes the bot quit :(  
+		//
+		else if (subcmd == "quit") {
+			var index = Math.floor(Math.random() * quitmessages.length);
+			_.irc.quit(quitmessages[index]);
+		}
+		//
+		// #owner list - lists owner commands
+		//
+		else if (subcmd == "list") {
+			_.commands.respond(ircdata, "list, quit, relist, config <var> <value>, enable <cmd>, disable <cmd>, [load]")
+		}
 	}
 }
+
+var quitmessages = [
+    "Get mad!",
+    "Don't make lemonade!",
+    //"Prometheus was punished by the gods for giving the gift of knowledge to man. He was cast into the bowels of the Earth and pecked by birds.",
+    //"It won't be enough.",
+    //"The answer is beneath us.",
+    //"Her name is Caroline. Remember that.",
+    //"That's all I can say.",
+    //"I don't understand! I did everything you asked!",
+    //"Why...?",
+    //"Critical error.",
+    "Shutting down.",
+    //"I don't blame you.",
+    //"I don't hate you.",
+    //"No hard feelings.",
+    "Goodbye.",
+    "Hibernating.",
+    "Resting.",
+    "Nap time."
+    //"Unknown error.",
+    //"Malfunctioning.",
+    //"It burns.",
+    //"Take me with you.",
+    //"That was nobody's fault.",
+    //"I blame myself.",
+    //"I probably deserved it."
+];
