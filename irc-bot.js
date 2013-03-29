@@ -5,15 +5,18 @@
 // You might be losing but you're not dead
 
 // IRC bot core
-
+console.log("-------------------------------");
+console.log("Boxmein's node IRC bot started.");
+console.log("-------------------------------");
+console.log("PWD: " + process.cwd());
 
 // [ Module requirements]
-
 var _ = {
   // Essentials
   net : require("net"),
   http : require("http"),
   sys : require("sys"),
+  fs: require("fs"),
   // Modules
   output   : require("./output.js"),   // Output formatting
   config   : require("./config.js"),   // Configuration
@@ -21,15 +24,16 @@ var _ = {
   irc      : require("./irc.js"),      // IRC wrappers
   // Command specialties
   Sandbox  : require("sandbox"),       // Javascript sandbox
-  DOMParser: require("xmldom").DOMParser // XML DOM traversal
+  DOMParser: require("xmldom").DOMParser, // XML DOM traversal
+  // Data files
+  adminData: require("./modules/data/admins.json")
 }
-
+// Enable checks
+if (_.config.badwords.enable) 
+  _.badwords = require("./badword.js");
+else 
+  _.badwords = {init: function(a){}};
 // [/Module requirements]
-
-
-console.log("-------------------------------");
-console.log("Boxmein's node IRC bot started.");
-console.log("-------------------------------");
 
 var connection = {
   client: new _.net.Socket(),
@@ -40,6 +44,7 @@ var connection = {
     _.output.init(_); // output > everything
     _.commands.init(_);
     _.irc.init(_);
+    _.badwords.init(_);
     _.irc.setClient(connection.client);
 
     _.output.log("irc.onConnected", "Connection successful");
@@ -101,8 +106,14 @@ var connection = {
 
       // 5. Handle commands
       ircdata.args = ircdata.message.split(" ");
-      if (ircdata.message.indexOf(_.commands.prefix) == 0) {
+      if (ircdata.message.indexOf(_.config.prefix) == 0) {
         connection.handleCommands(ircdata);
+      }
+      // 6. Badwords
+      if (_.config.badwords.enable) {
+        var found = "";
+        if(found = _.badwords.scan(ircdata))
+          _.badwords.announce(ircdata, found);
       }
     }
     // Ping-pong handling
