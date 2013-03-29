@@ -25,51 +25,27 @@ var irc = {
     irc.raw("JOIN " + channel);
   },
   part: function(channel) { // To leave a channel
-    irc.raw("PART " + channel + " :" + config.partmsg);
+    irc.raw("PART " + channel);
   },
-  quit: function() {
-    var index = Math.floor(Math.random() * 100) % this.quitmsgs.length;
-    _.output.log("irc.quit", "index: " + index + "; message: " + irc.quitmsgs[index]);
-    irc.privmsg("#powder-bots", this.quitmsgs[index]);
-    irc.raw("QUIT :" + this.quitmsgs[index]);
+  quit: function(quitmsg) {
+    if (_.commands.cmds.admin)
+      _.commands.cmds.admin.die();
+    if (!quitmsg) 
+      quitmsg = "D:";
+    //irc.privmsg("#powder-bots", this.quitmsgs[index]);
+    irc.raw("QUIT :" + quitmsg);
     setTimeout(function() { 
       process.exit(0); 
     }, 5000);
   },
-  raw: function(data, hide) { // To send raw IRC data (hide hides the sending box, optionally)
-
+  raw: function(data, hide) { 
+  // To send raw IRC data (hide hides the sending box, optionally)
     irc.client.write(data + "\n", "ascii", function() {
       if(!hide)
         _.output.out("raw",data);
     });
   },
-  quitmsgs : [
-    "Get mad!",
-    "Don't make lemonade!",
-    "Prometheus was punished by the gods for giving the gift of knowledge to man. He was cast into the bowels of the Earth and pecked by birds.",
-    "It won't be enough.",
-    "The answer is beneath us.",
-    "Her name is Caroline. Remember that.",
-    "That's all I can say.",
-    "I don't understand! I did everything you asked!",
-    "Why...?",
-    "Critical error.",
-    "Shutting down.",
-    "I don't blame you.",
-    "I don't hate you.",
-    "No hard feelings.",
-    "Goodbye.",
-    "Hibernating.",
-    "Resting.",
-    "Nap time.",
-    "Unknown error.",
-    "Malfunctioning.",
-    "It burns.",
-    "Take me with you.",
-    "That was nobody's fault.",
-    "I blame myself.",
-    "I probably deserved it."
-  ]
+  
 };
 module.exports = irc;
 
