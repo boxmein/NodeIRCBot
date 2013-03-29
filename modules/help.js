@@ -10,6 +10,7 @@ module.exports = {
 		console.log("Initialised help.js");
 	},
 	exec: function(ircdata) {
+		ircdata.args[0] = _.commands.cleanup_query(ircdata.args[0]);
 		if (!ircdata.args[0]) {
 			// Run myself with "help" when nothing was used
 			ircdata.args[0] = "help";
