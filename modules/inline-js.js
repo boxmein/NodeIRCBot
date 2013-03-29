@@ -1,5 +1,3 @@
-// HTTP 418 I'm a teapot
-// And I'm useful as a template
 var _ = {};
 var sand = {};
 module.exports = {
@@ -15,6 +13,8 @@ module.exports = {
 	exec: function(ircdata) {
 		var js = ircdata.args.join(" ");
 		if (_.commands.sender_isowner(ircdata.hostmask)) {
+			if (ircdata.args[0] && ircdata.args[0] === "sandbox")
+				ircdata.args.shift() && runSand(ircdata, js);
 			// Owner gets full access
 			var response = "";
 			try {
@@ -25,12 +25,15 @@ module.exports = {
 		}
 		else {
 			// Peasants get the sandbox! >:C
-			runSand(ircdata, js);
+			this.runSand(ircdata, js);
 		}
 	},
 	runSand: function(ircdata, js) {
 		sand.run("(function() {" + js + "})();", function(out) {
+			if (out.result.length < 50) 
       	_.commands.respond(ircdata, "R: " + out.result);
+      else 
+      	_.commands.respond(ircdata, "R:" + out.result.slice(0, 50) + "...");
   	});	
 	}
 }
