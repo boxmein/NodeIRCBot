@@ -3,6 +3,9 @@ var config = {
   // For prefix, see commands
   silent: false, // Hides log and channel messages, leaves errors
   loud:  false,  // Used by modular to output errors into the IRC
+  prefix: "",    // The bot's command prefix character (if more than one there's a number you need change)
+  textlogging: true, // Does the <nick/channel> logging thing
+  rawlogging: false, // Logs everything
   partmsg: "",   // Message to send when leaving channel
   quitmsg: "",   // Message to send when quitting
   nickname: "",  // Bot nickname
