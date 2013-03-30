@@ -17,6 +17,7 @@ var _ = {
   http : require("http"),
   sys : require("sys"),
   fs: require("fs"),
+  cp: require("child_process"),
   // Modules
   output   : require("./output.js"),   // Output formatting
   config   : require("./config.js"),   // Configuration
@@ -48,7 +49,7 @@ var connection = {
     _.irc.setClient(connection.client);
 
     _.output.log("irc.onConnected", "Connection successful");
-    _.output.announce("Press q + enter to exit program.");
+    _.output.announce("Use 'quit' to exit this program. I'd prefer #owner quit.");
 
     setTimeout(function() {
       _.irc.raw("NICK " + _.config.nickname);
@@ -71,7 +72,7 @@ var connection = {
     }
   },
   onData: function(data) {
-    if(_.output.rawlogging)
+    if(_.config.rawlogging)
         _.output.log("",data); // output raw IRC
 
     // Channel messages and commands
@@ -101,7 +102,7 @@ var connection = {
         ircdata.messageType |= 2;
       
       // 4. Logging
-      if (_.output.textlogging) // If text is being logged regularly
+      if (_.config.textlogging) // If text is being logged regularly
         _.output.chanmsg(ircdata);
 
       // 5. Handle commands
@@ -112,8 +113,10 @@ var connection = {
       // 6. Badwords
       if (_.config.badwords.enable) {
         var found = "";
-        if(found = _.badwords.scan(ircdata))
+        found = _.badwords.scan(ircdata);
+        if(found) {
           _.badwords.announce(ircdata, found);
+        }
       }
     }
     // Ping-pong handling
