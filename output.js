@@ -6,8 +6,7 @@ _ = {};
 // * Check if some logging is allowed
 var output = {
   
-  textlogging: true,
-  rawlogging: false,
+  
   init: function(underscore) {
     _ = underscore;
     _.output.log("", "Initialized output.js");
