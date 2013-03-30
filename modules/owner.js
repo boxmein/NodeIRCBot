@@ -1,12 +1,26 @@
 var _ = {};
 module.exports = {
-	helptext: "owner <subcommand> [arguments...] - owner-only commands (danger danger!)", 
+	helptext: {
+		base: "owner <subcommand> [arguments...] - owner-only commands (danger danger!)", 
+		cmds: {
+			"enable": "enable <module> - sets a module's .enable flag to 1", 
+			"disable": "disable <module> - sets a module's .enable flag to 0",
+			"load"  : "load <filename> <commandname> - loads a module (ex: load ./modules/info.js info)",
+			"reload": "reload <module> - reloads an already loaded module (ex: reload info)",
+			"config": "config <variable> <value> - sets a value for a var in config.js", 
+			"relist": "relist - reloads the command list",
+			"quit"  : "quit - quits the bot",
+			"restart": "restart - restarts the bot via a child process",
+			"list" : "list - lists all my commands"
+		}
+	},
 	enable: 1,
 	getHelp: function() { return this.helptext; },
 	// Return anything but false when something went wrong
 	init: function(underscore) { 
 		_ = underscore; 
 		console.log("Initialised owner.js");
+
 	},
 	exec: function(ircdata) {
 		if (!_.commands.sender_isowner(ircdata.hostmask)) 
@@ -39,22 +53,29 @@ module.exports = {
 			_.commands.cmds[command].enable = 0;
 		}
 		//
-		// #owner load <module> - loads a module. re-loads
+		// #owner load <filename> <script> - loads a module.
 		//
 		else if (subcmd == "load") 
 		{
-			var script = ircdata.args.shift() || false;
-			var scriptfile = "";
-			if (!script)
-				throw "No script argument passed: " + script;
-			// indexof ! === 0 means that you take the path literally
-			// ^ false means don't take it literally and append command values
-			if (script.indexOf("!") !== 0)
-				scriptfile = "./modules/" + script + ".js";
-			else
-				scriptfile = script;
-			// If error then caught in irc-bot.js
-			_.commands.load(script, scriptfile);
+			var filename = ircdata.args.shift() || false;
+			if (!filename)
+				throw "No filename argument passed: " + filename;
+			var commandname = ircdata.args.shift() || false;
+			if (!commandname)
+				throw "No command name specified: " + commandname;
+			_.commands.load(commandname, filename);
+		}
+		//
+		// #owner reload <module> - reloads existing module
+		else if (subcmd == "reload")
+		{
+			var module = ircdata.args.shift() || false;
+			if (!module)
+				throw "No module argument passed: " + module;
+			if (!_.commands.cmds.hasOwnProperty(module))
+				throw "No such command: " + module;
+			_.output.log("owner:reload", "Reloading module: " + module);
+			_.commands.reload(module);
 		}
 		//
 		// #owner config <key> [value] - returns <key>'s value or sets <key> to [value]
@@ -90,10 +111,19 @@ module.exports = {
 			_.irc.quit(quitmessages[index]);
 		}
 		//
+		// #owner restart - makes the bot restart
+		//
+		else if (subcmd == "restart") {
+			_.output.announce("Restarting: Passing on control to restart.bat");
+			var child = _.cp.spawn("node", "irc-bot.js", {detached: true, stdio: ['ignore', null, null]});
+			child.unref();
+			this.exec({hostmask: "unaffiliated/boxmein", args: ["quit"]});
+		}
+		//
 		// #owner list - lists owner commands
 		//
 		else if (subcmd == "list") {
-			_.commands.respond(ircdata, "list, quit, relist, config <var> <value>, enable <cmd>, disable <cmd>, [load]")
+			_.commands.respond(ircdata, "list, quit, relist, config, enable, disable, load, reload, restart");
 		}
 	}
 }
