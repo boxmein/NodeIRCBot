@@ -1,7 +1,21 @@
 var _ = {};
 module.exports = {
 	admins: {},
-	helptext: "admin <subcommand> [arguments] - do admin stuff", 
+	helptext: {
+		base: "admin <subcommand> [arguments] - does admin stuff (depending on clearances!)",
+		cmds: {
+			"op": "op <user> - gives ops to user (CL:3)",
+			"deop": "deop <user> - takes ops from user (CL:3)",
+			"kick": "kick <user> - removes user from the channel (CL:1)",
+			"kban": "kban <user> - kicks + bans a given user (CL:3)",
+			"ban": "ban <user> [time seconds] - bans an user (CL:3)",
+			"voice": "voice <user> - gives voice to user (CL:2)",
+			"devoice": "devoice <user> - takes voice from user (CL:2)",
+			"mode" : "mode <mode> [user] - does mode stuff (CL:3)",
+			"topic": "topic <topic> - sets the channel topic (CL:3)",
+			"cl": "cl <nick> | cl <nick> <clearance> - gives an user a clearance level (CL:5)",
+		}
+	}, 
 	enable: 1,
 	getHelp: function() { return this.helptext; },
 	// Return anything but false when something went wrong
@@ -24,11 +38,10 @@ module.exports = {
 		//
 		// #admin op <nick> - gives ops to hostmask
 		//
-		else if (subcommand == "op")
-		{
+		else if (subcommand == "op") {
 			
-			if (this.admins[ircdata.sender].level < 1)
-				throw "Sender has too low clearance";
+			if (this.admins[ircdata.sender].level < 3)
+				throw "Sender has too low clearance (<3)";
 			var subsub = ircdata.args.shift() || false;
 			console.log("admin:exec:op", "running op command: subsub:" + subsub);
 			if (!subsub) 
@@ -39,61 +52,110 @@ module.exports = {
 		//
 		// #admin deop <nick> - takes ops from hostmask
 		// 
-		else if (subcommand == "deop")
-		{
+		else if (subcommand == "deop") {
 
-			if (this.admins[ircdata.sender].level < 1) 
-				throw "Sender has too low clearance (<1)";
+			if (this.admins[ircdata.sender].level < 3) 
+				throw "Sender has too low clearance (<3)";
 			var subsub = ircdata.args.shift() || false;
 			console.log("admin:exec:deop", "running deop command, subsub:" + subsub);
 			if (!subsub) 
-				throw "No hostmask specified";
+				throw "Nobody specified to deop";
 			else 
 				_.irc.raw("MODE " + ircdata.channel + " -o " + subsub);
+		}
+		else if (subcommand == "kick") {
+			if (this.admins[ircdata.sender.level] <1)
+				throw "Sender has too low clearance (<1)";
+			var kickee = ircdata.args.shift() || false;
+			if (!kickee)
+				throw "Nobody specified to kick";
+			var offyougo = ircdata.args.join(" ");
+
+			_.irc.raw("KICK " + ircdata.channel + " " + kickee + ": " + offyougo);
+		}
+		else if (subcommand == "kban") {
+			if (this.admins[ircdata.sender.level] <3)
+				throw "Sender has too low clearance (<3)";
+			var kickbannee = ircdata.args.shift() || false;
+			if (!kickbannee)
+				throw "Nobody specified to kick";
+			var time = ircdata.args.shift() || false;
+			if (!time)
+				time = 0;
+			_.irc.raw("KICK " + ircdata.channel + " " + kickbannee);
+			_.irc.raw("MODE " + ircdata.channel + " +b " + kickbannee);
+			if (time)
+				setTimeout(function() {_.irc.raw("MODE " + ircdata.channel + " -b " + kickbannee);}, time*1000);			
+		}
+		else if (subcommand == "voice") {
+			if (this.admins[ircdata.sender.level] <2)
+				throw "Sender has too low clearance (<2)";
+			var voicee = ircdata.args.shift() || false; 
+			if (!voicee) 
+				throw "Nobody targeted to voice";
+			_.irc.raw("MODE " + ircdata.channel + " +v " + voicee);
+		}
+		else if (subcommand == "devoice") {
+			if (this.admins[ircdata.sender.level] <2)
+				throw "Sender has too low clearance (<2)";
+			var voicee = ircdata.args.shift() || false; 
+			if (!voicee) 
+				throw "Nobody targeted to devoice";
+			_.irc.raw("MODE " + ircdata.channel + " -v " + voicee);
+		}
+		else if (subcommand == "mode") {
+		if (this.admins[ircdata.sender.level] <3)
+				throw "Sender has too low clearance (<3)";
+			var modestring = ircdata.args.join(" ");
+			if (!voicee) 
+				throw "Nobody targeted to voice";
+			_.irc.raw("MODE " + ircdata.channel + " " + modestring);
+		}
+		else if (subcommand == "topic") {
+			
 		}
 		//
 		// #admin cl <nick> [clearance] - sets a clearance on a nick or returns it
 		//
 		else if (subcommand == "cl") {
 			// If clearance is enough
-			if (this.admins[ircdata.sender].level < 3) 
-				throw "Sender has too low clearance (<3) ";
+			if (this.admins[ircdata.sender].level < 5) 
+				throw "Sender has too low clearance (<5) ";
 			// And there's a sub-subcommand (nickname)
-			var subsub = ircdata.args.shift() || false;
-			if (!subsub) 
+			var nickname = ircdata.args.shift() || false;
+			if (!nickname) 
 				throw "No nick specified";
 			// And there's a clearance level
-			var subsubsub = ircdata.args.shift() || false;
+			var clearance = ircdata.args.shift() || false;
 			// Return clearance if exist
-			console.log("admin:exec:cl", "running clearance command, subsub: " + subsub + ", subsubsub:" + subsubsub);
-			if (!subsubsub) {
-				if (this.admins.hasOwnProperty(subsub) && this.admins[subsub].level) 
-					_.commands.respond(ircdata, "Clearance: " + this.admins[subsub].level);
+			console.log("admin:exec:cl", "running clearance command, nickname: " + nickname + ", clearance:" + clearance);
+			if (!clearance) {
+				if (this.admins.hasOwnProperty(nickname) && this.admins[nickname].level) 
+					_.commands.respond(ircdata, "Clearance: " + this.admins[nickname].level);
 			}
 			// Set clearance if nonexist
 			else {
 				try {
-					subsubsub = parseInt(subsubsub);
+					clearance = parseInt(clearance);
 				} catch(err) { throw "Can't parse clearance: " + err; }
-				if (this.admins.hasOwnProperty(subsub))
-					this.admins[subsub].level = subsubsub;
+				if (this.admins.hasOwnProperty(nickname))
+					this.admins[nickname].level = clearance;
 				else {
-					this.admins[subsub] = {};
-					this.admins[subsub].level = subsubsub;
+					this.admins[nickname] = {};
+					this.admins[nickname].level = clearance;
 				}
 			}
-
 		}
 		// 
 		// #admin list - lists all admin commands
 		// 
 		else if (subcommand == "list")
 		{
-			_.commands.respond(ircdata, "op <nick>, deop <nick>, cl <nick> [clearance-level]");
+			_.commands.respond(ircdata, "op, deop, kick, ban, kban, voice, devoice, mode, cl, topic");
 		}
 	},
 	die: function () {
-		_.fs.writeFile("data/admins.json", JSON.stringify(this.admins, null, 2), function(err) {
+		_.fs.writeFile("modules/data/admins.json", JSON.stringify(this.admins, null, 2), function(err) {
 			if (err)
 				throw "Error saving admin data: " + err;
 			else
