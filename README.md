@@ -14,6 +14,19 @@ A functional IRC bot written in node.js
 2. Acquire the node modules [xmldom][domp] and [Sandbox][sand]
 3. Run the IRC bot script with `node irc-bot.js`
 4. For extra output, modify config.textlogging and config.rawlogging to a non-false value, config.silent to a false value.
+----
+Which can be condensed down to...  
+
+    $ ls 
+    config.js   modules
+    README.md     badword.js        config.default.js  irc-bot.js  output.js
+    _compile.bat  commands.js       config.example.js  irc.js
+
+    $ cp config.example.js config.js && notepad/gedit/vim/... config.js
+
+    $ npm install -g sandbox &&
+    npm install -g xmldom  &&
+    node irc-bot.js
 
 ## Additionally: 
 
