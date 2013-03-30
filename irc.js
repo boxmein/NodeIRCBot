@@ -12,6 +12,9 @@ var irc = {
   ctcp: function(channel, data) { // to send CTCP data which must end in \x01
     irc.raw("PRIVMSG " + channel + " :\x01" + data + "\x01");
   },
+  mode: function (channel, mode) {
+    irc.raw("MODE " + channel + " " + mode);
+  },
   action: function(channel, action) { // to send a /me action
     irc.ctcp(channel, "ACTION "+ action);
   },
