@@ -26,26 +26,31 @@ module.exports = {
       }, function(response) {
         if (response.statusCode == 200)
         { 
-
+          var data = "";
           response.setEncoding("utf8");
           response.on("data", function(chunk) {
-          	var xmlobj = {};
-          	var xmlparse = new _.DOMParser();
-            try {
-          	xmlobj = xmlparse.parseFromString(chunk);
-          	if (xmlobj.getElementsByTagName("lfm")[0].getAttribute("status") != "ok")
-          		throw "Last.fm returned bad status code: " + xmlobj.getElementsByTagName("lfm")[0].status;
-	          var track = xmlobj.getElementsByTagName("track")[0];
-	          endstr += (track.nowplaying == "true" ? "Now Playing: " : "Last Played: ");
-	          endstr += track.getElementsByTagName("artist")[0].textContent + " - ";
-	          endstr += track.getElementsByTagName("name")[0].textContent; 
-	          _.commands.respond(ircdata, endstr);
-            } catch(err) { throw "Error parsing XML: " + err; }
+          	data += chunk;
           });
         }
         else throw "HTTP response wasn't OK: " + response.statusCode; 
     });
     req.on("error", function(evt) { throw "Request error: " + evt.message; });
+    req.on("end", function(evt) { 
+      _.output.log("commands:lastfm", "Last.fm ready for parsing data.");
+      var xmlobj = {};
+      var xmlparse = new _.DOMParser();
+      try {
+      xmlobj = xmlparse.parseFromString(chunk);
+      if (xmlobj.getElementsByTagName("lfm")[0].getAttribute("status") != "ok")
+        throw "Last.fm returned bad status code: " + xmlobj.getElementsByTagName("lfm")[0].status;
+      var track = xmlobj.getElementsByTagName("track")[0];
+      endstr += (track.nowplaying == "true" ? "Now Playing: " : "Last Played: ");
+      endstr += track.getElementsByTagName("artist")[0].textContent + " - ";
+      endstr += track.getElementsByTagName("name")[0].textContent; 
+      _.commands.respond(ircdata, endstr);
+      } catch(err) { throw "Error parsing XML: " + err; }
+
+    });
     req.end();
 	}
 }
