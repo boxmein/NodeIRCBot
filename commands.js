@@ -1,6 +1,5 @@
 var _ = {}; // Contains all the references to our objects
 var commands = {
-	prefix: "#",
 	cmds: {},  // Command objects are kept in here
 	helps: {}, // Helptexts are added in .load(cmd, file);
 	// Gives me module references to use
@@ -37,10 +36,12 @@ var commands = {
 	},
 	load: function(cmd, file) {
 
-		if (!/^\.\//.test(file))
+		if (!/\.js$/.test(file))
 			throw "File name invalid: "+ file;
 		try {
 			this.cmds[cmd] = require(file);
+			// Set the filename
+			this.cmds[cmd].file = file;
 			if(this.cmds[cmd].init(_))
 				throw "Init failed for command " + cmd;
 			this.helps[cmd] = this.cmds[cmd].getHelp();
@@ -49,9 +50,16 @@ var commands = {
 			throw "Error loading file "+ file + " : " + err;
 		}
 	},
+	// reload can't possibly work because require cache
+	/*reload: function(cmd) {
+		delete require.cache[this.cmds[cmd].file];
+		this.load(cmd, this.cmds[cmd].file);
+	},*/
 	generateCmdList: function() {
 		arrr = "";
 		for (var cmd in this.cmds) {
+			if (cmd == "owner" || cmd == "admin")
+				cmd += "...";
 			arrr += cmd + ", ";
 		}
 		// remove trailing comma space
