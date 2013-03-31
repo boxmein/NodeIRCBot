@@ -18,6 +18,13 @@ var config = {
   lastFM: {
     apiKey: "",   // Last.fm API key for commands.lastfm
     secretKey: "" // Last.fm secret key
+  },
+  badwords: { // Preparation for badwords.js
+    enable:      false,
+    shoutAbuse:  true,
+    useOpPowers: false,
+    words: [],
+    abuse: []
   }
 };
 module.exports = config;
