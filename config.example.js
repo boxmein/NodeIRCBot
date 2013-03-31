@@ -1,4 +1,7 @@
-
+// Example configuration file
+// Note, don't ever broadcast this, as it contains your NickServ password
+// and Last.fm secret API keys!
+// Some parts may not be used right now.
 var config = {
   // For prefix, see commands
   silent: false, // Hides log and channel messages, leaves errors
