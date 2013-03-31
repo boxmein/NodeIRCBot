@@ -10,7 +10,8 @@ module.exports = {
 		console.log("Initialised help.js");
 	},
 	exec: function(ircdata) {
-		var subcmds = ircdata.args[0].split('.');
+		if (ircdata.args[0])
+			var subcmds = ircdata.args[0].split('.');
 		subcmds.map(_.commands.cleanup_query);
 		if (!ircdata.args[0]) {
 			// Run myself with "help" when nothing was used
