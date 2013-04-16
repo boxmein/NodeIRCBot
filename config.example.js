@@ -6,10 +6,10 @@ var config = {
   // For prefix, see commands
   silent: false, // Hides log and channel messages, leaves errors
   loud: true,  // Says error messages out
-  badwords: true, // Uses the badwords plugin
   prefix: "#",
   textlogging: true, // Does the <nick/channel> logging thing
   rawlogging: false, // Logs everything
+  enableSandboxJS: false,
   nickname: "boxnode",
   pass: "doyoubelieveinmagic",
   realname: "magikku",

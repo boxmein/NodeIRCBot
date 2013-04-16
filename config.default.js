@@ -6,6 +6,7 @@ var config = {
   prefix: "",    // The bot's command prefix character (if more than one there's a number you need change)
   textlogging: true, // Does the <nick/channel> logging thing
   rawlogging: false, // Logs everything
+  enableSandboxJS: false, // Enables sandboxed JS interpreter 
   partmsg: "",   // Message to send when leaving channel
   quitmsg: "",   // Message to send when quitting
   nickname: "",  // Bot nickname
@@ -13,7 +14,7 @@ var config = {
   realname: "",  // Reported real name
   channels: "",  // Channels separated by comma. Example: #chat,#freenode,#a,#b,#oneliners
   owner: ""      // Use a part of the hostmask
-  server: "irc.freenode.net" // IRC server to connect to (irc.freenode.net)
+  server: "irc.freenode.net", // IRC server to connect to (irc.freenode.net)
   ownerEmail: "", // Owner of the bot, for user-agents in requests. 
   lastFM: {
     apiKey: "",   // Last.fm API key for commands.lastfm
