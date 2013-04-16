@@ -63,6 +63,9 @@ module.exports = {
 			else 
 				_.irc.raw("MODE " + ircdata.channel + " -o " + subsub);
 		}
+		//
+		// #admin kick <person> [message] - kicks the specified person off the channel. WIP
+		// 
 		else if (subcommand == "kick") {
 			if (this.admins[ircdata.sender.level] <1)
 				throw "Sender has too low clearance (<1)";
@@ -70,9 +73,13 @@ module.exports = {
 			if (!kickee)
 				throw "Nobody specified to kick";
 			var offyougo = ircdata.args.join(" ");
-
-			_.irc.raw("KICK " + ircdata.channel + " " + kickee + ": " + offyougo);
+			// KICK #powder-bots #{kickee} 
+			// KICK #powder-bots #{kickee} :#{offyougo}
+			_.irc.raw("KICK " + ircdata.channel + " " + kickee + (offyougo? " :" + offyougo : ""));
 		}
+		//
+		// #admin kban <person> - kicks AND bans the given person. Also has a time delay.
+		//
 		else if (subcommand == "kban") {
 			if (this.admins[ircdata.sender.level] <3)
 				throw "Sender has too low clearance (<3)";
@@ -84,31 +91,44 @@ module.exports = {
 				time = 0;
 			_.irc.raw("KICK " + ircdata.channel + " " + kickbannee);
 			_.irc.raw("MODE " + ircdata.channel + " +b " + kickbannee);
-			if (time)
+			// if time has been set, do the timeout thing. 
+			if (time) // MODE ##powder-bots -b #{kickbannee} (after time * 1000 milliseconds)
 				setTimeout(function() {_.irc.raw("MODE " + ircdata.channel + " -b " + kickbannee);}, time*1000);			
 		}
+		//
+		// #admin voice <person> - Gives voice to person
+		//
 		else if (subcommand == "voice") {
 			if (this.admins[ircdata.sender.level] <2)
 				throw "Sender has too low clearance (<2)";
 			var voicee = ircdata.args.shift() || false; 
 			if (!voicee) 
 				throw "Nobody targeted to voice";
+			// MODE ##powder-bots +v #{voicee}
 			_.irc.raw("MODE " + ircdata.channel + " +v " + voicee);
 		}
+		// 
+		// #admin devoice <person> - removes voice from a person
+		// 
 		else if (subcommand == "devoice") {
 			if (this.admins[ircdata.sender.level] <2)
 				throw "Sender has too low clearance (<2)";
 			var voicee = ircdata.args.shift() || false; 
 			if (!voicee) 
 				throw "Nobody targeted to devoice";
+			// MODE ##powder-bots -v #{voicee}
 			_.irc.raw("MODE " + ircdata.channel + " -v " + voicee);
 		}
+		//
+		// #admin mode <modestring> - does MODE #current-channel modestring (can do everything above)
+		//
 		else if (subcommand == "mode") {
 		if (this.admins[ircdata.sender.level] <3)
 				throw "Sender has too low clearance (<3)";
 			var modestring = ircdata.args.join(" ");
 			if (!voicee) 
 				throw "Nobody targeted to voice";
+			// MODE ##powder-bots #{modestring}
 			_.irc.raw("MODE " + ircdata.channel + " " + modestring);
 		}
 		else if (subcommand == "topic") {
