@@ -1,3 +1,5 @@
+/*jshint node: true */
+
 // When everything falls apart
 // Just don't back down
 // Just keep running
@@ -28,12 +30,12 @@ var _ = {
   DOMParser: require("xmldom").DOMParser, // XML DOM traversal
   // Data files
   adminData: require("./modules/data/admins.json")
-}
+};
 // Enable checks
 if (_.config.badwords.enable) 
   _.badwords = require("./badword.js");
 else 
-  _.badwords = {init: function(a){}};
+  _.badwords = {init: function(){}};
 // [/Module requirements]
 
 var connection = {
@@ -92,7 +94,6 @@ var connection = {
         message  : result[3].substring(1).trim(),
         messageType: 0 // 0000 = Channel message. 0001 = PM. 0010 = CTCP message
       };
-
       // 3. messageType + special occasions
       if (ircdata.channel == _.config.nick) { // Then he's PMing!
         ircdata.messageType |= 1;
@@ -107,7 +108,7 @@ var connection = {
 
       // 5. Handle commands
       ircdata.args = ircdata.message.split(" ");
-      if (ircdata.message.indexOf(_.config.prefix) == 0) {
+      if (ircdata.message.indexOf(_.config.prefix) === 0) {
         connection.handleCommands(ircdata);
       }
       // 6. Badwords
@@ -126,15 +127,14 @@ var connection = {
     }
     // Notices?
     else if(data.indexOf("NOTICE") != -1) { 
-      var arr = data.split(' ');   // Creates an array with 
-      var result = arr.splice(0,3);// ["hostmask", "command", "channel", "mess age"]
-      result.push(arr.join(" ").trim());
+      var cutup = data.split(' ');   // Creates an array with 
+      var resulte = cutup.splice(0,3);// ["hostmask", "command", "channel", "mess age"]
+      resulte.push(resulte.join(" ").trim());
       var noticedata = {
-        hostmask: result[0].substring(1),
-        sender: result[0].substring(1, result[0].indexOf("!")),
-        message: result[3].substring(1),
-
-      }
+        hostmask: resulte[0].substring(1),
+        sender: resulte[0].substring(1, resulte[0].indexOf("!")),
+        message: resulte[3].substring(1)
+      };
       if (noticedata.hostmask.indexOf("freenode.net") == -1)
         _.output.inn("-"+noticedata.sender+"- :" +noticedata.message.trim());
 
@@ -151,7 +151,7 @@ var connection = {
   // If we get dumped
   onConnectionClose: function() {
     _.output.log("irc.onConnectionClose", "Disconnected ()");
-    process.exit(0);
+    _.irc.quit(undefined, true); 
   }
 };
 
@@ -164,10 +164,8 @@ if (!String.prototype.format) {
   String.prototype.format = function() {
     var args = arguments;
     return this.replace(/{(\d+)}/g, function(match, number) { 
-          return typeof args[number] != 'undefined'
-        ? args[number]
-        : match
-      ;
+          return typeof args[number] != 'undefined'? 
+          args[number] : match;
     });
   };
 }
@@ -179,15 +177,18 @@ var stdin = process.openStdin();
 
 connection.client.on("data", connection.onData);
 connection.client.on("close", connection.onConnectionClose);
+connection.client.on("error", function(chunk) { 
+  _.output.log("connection.client:onerror", "Socket error: " + chunk);
+});
 stdin.on('data', function(data) { 
   // feel free to add commands here. 
   data = data.toString().trim();
-  if (data == "") 
+  if (data === '') 
     return;
   var args = data.split(" ");
   var cmd  = args.shift();
   // output.log("stdin.onData", "received input: " + data);
-       if(cmd == "say") 
+  if(cmd == "say") 
     _.irc.privmsg(args.shift(), args.join(" "));
   else if(cmd == "raw") 
     _.irc.raw(args.join(" "));
@@ -196,7 +197,7 @@ stdin.on('data', function(data) {
   else if(cmd == "part") 
     _.irc.part(args.shift());
   else if(cmd == "quit")
-    _.irc.quit();
+    _.irc.quit(undefined, true);
   else if(cmd == "tlogging")
     _.config.textlogging = !_.config.textlogging;
   else if(cmd == "help") 
