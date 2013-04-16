@@ -39,6 +39,8 @@ module.exports = {
 			if (!_.commands.cmds.hasOwnProperty(command))
 				throw "No such command: " + command;
 			_.commands.cmds[command].enable = 1;
+			if (_.commands.cmds[command].onEnable)
+				_.commands.cmds[command].onEnable();
 		}
 		//
 		// #owner disable <module> - sets its .enable flag to 0
@@ -51,6 +53,8 @@ module.exports = {
 			if (!_.commands.cmds.hasOwnProperty(command))
 				throw "No such command: " + command;
 			_.commands.cmds[command].enable = 0;
+			if (_.commands.cmds[command].onDisable)
+				_.commands.cmds[command].onDisable();
 		}
 		//
 		// #owner load <filename> <script> - loads a module.
