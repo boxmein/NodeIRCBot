@@ -1,3 +1,5 @@
+/*jshint node: true*/
+
 var _ = {};
 module.exports = {
 	helps: {}, // # so meta
@@ -10,8 +12,9 @@ module.exports = {
 		console.log("Initialised help.js");
 	},
 	exec: function(ircdata) {
+		var subcmds;
 		if (ircdata.args[0])
-			var subcmds = ircdata.args[0].split('.');
+			subcmds = ircdata.args[0].split('.');
 		subcmds.map(_.commands.cleanup_query);
 		if (!ircdata.args[0]) {
 			// Run myself with "help" when nothing was used
@@ -19,7 +22,7 @@ module.exports = {
 			return this.exec(ircdata);
 		}
 		else if(this.helps.hasOwnProperty(ircdata.args[0])) {
-			if (ircdata.args[0] == "owner" || ircdata.args[0] == "admin")
+			if (ircdata.args[0] == "owner" || ircdata.args[0] == "admin" || ircdata.args[0] == "gam")
 				_.commands.respond(ircdata, this.helps[ircdata.args[0]].base);
 			_.commands.respond(ircdata, this.helps[ircdata.args[0]]);
 		}
@@ -40,4 +43,4 @@ module.exports = {
 	setHelp: function(helps) {
 		this.helps = helps;
 	}
-}
+};
