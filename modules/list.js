@@ -1,6 +1,8 @@
+/*jshint node: true*/
+
 var _ = {};
 module.exports = {
-	helptext: "list - lists all commands I have loaded", 
+	helptext: "list - lists all commands I have loaded (... commands have sub-commands as well)", 
 	enable: 1,
 	commandList: "",
 	getHelp: function() { return this.helptext; },
@@ -16,4 +18,4 @@ module.exports = {
 		this.commandList = arrr;
 		console.log("Command list: " + this.commandList);
 	}
-}
+};
