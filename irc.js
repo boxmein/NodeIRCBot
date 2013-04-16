@@ -30,13 +30,18 @@ var irc = {
   part: function(channel) { // To leave a channel
     irc.raw("PART " + channel);
   },
-  quit: function(quitmsg) {
-    if (_.commands.cmds.admin)
-      _.commands.cmds.admin.die();
+  quit: function(quitmsg, nosendquit) {
+    for (var k in _.commands.cmds) 
+    {
+      var each = _.commands.cmds[k];
+      if (each.die)
+        each.die();
+    }
     if (!quitmsg) 
       quitmsg = "D:";
     //irc.privmsg("#powder-bots", this.quitmsgs[index]);
-    irc.raw("QUIT :" + quitmsg);
+    if (!nosendquit)
+      irc.raw("QUIT :" + quitmsg);
     setTimeout(function() { 
       process.exit(0); 
     }, 5000);
@@ -47,8 +52,7 @@ var irc = {
       if(!hide)
         _.output.out("raw",data);
     });
-  },
-  
+  }
 };
 module.exports = irc;
 
