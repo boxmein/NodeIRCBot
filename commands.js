@@ -83,6 +83,7 @@ var commands = {
       return query.trim().replace(/[^A-Za-z]+?/gi, ""); 
     else
       this.cleanup_query(""+query);
-  }
+  },
+  reload: function() { }
 };
 module.exports = commands;
