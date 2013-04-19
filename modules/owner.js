@@ -129,6 +129,12 @@ module.exports = {
 		else if (subcmd == "list") {
 			_.commands.respond(ircdata, "list, quit, relist, config, enable, disable, load, reload, restart");
 		}
+		// 
+		// #owner recmd - reloads every command. 
+		// 
+		else if (subcmd == "recmd") {
+			_.commands.respond(ircdata, _.commands.init(_) ? "Something went wrong, see log" : "Commands reloaded");
+		}
 	}
 }
 
