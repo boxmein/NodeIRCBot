@@ -23,15 +23,15 @@ var processtest = {
 		console.log("Initialised processtest.js");
 	},
 	exec: function(ircdata) {
-		var name = ircdata.arg.shift() || false; 
+		var name = ircdata.args.shift() || false; 
 		if (!name) 
 			throw "No sub-command argument specified";
 		if (!this.procs.hasOwnProperty(name))
 			throw "Sub-command is not a process :/"; 
-		var str = ircdata.args.join(' ') || "";
-		this.procs[name].stdin.write(str+'\n');
-		_.output.log("stdstream:exec:"+arg, this.procs[name].lastdout);
-		_.commands.respond(this.procs[name].lastdout);
+		var str = ircdata.args.join(' ') || "a";
+		this.procs[name].process.stdin.write(str+'\n');
+		_.output.log("stdstream:exec:"+str, this.procs[name].lastdout);
+		_.commands.respond(ircdata, this.procs[name].lastdout);
 		
 	},
 	die: function () {
