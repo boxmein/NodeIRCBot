@@ -7,6 +7,8 @@ Throughout this explanation I'll refer a lot to `modules/hello.js` for it is the
 
 ## Code walkthrough
 
+This chapter will go through modules/hello.js and pretty much just explain what each line does. 
+
 ## 1. Module structure
 
     /*jshint node:true */
@@ -25,12 +27,13 @@ The node.js `require()` expects all of the 'public' features of your module to b
 
 This is where one could store the help text for the command. It isn't necessary to name it this way since it's never directly accessed.   
 I do use a few conventions when writing the help text:  
-1. First and foremost, the command name. Without a prefix character.
-2. Mandatory arguments go with &lt;argument&gt; 
-3. Optional arguments are surrounded like this: [argument]
-4. Next comes a dash and the help text. 
 
-So for example it could look like this: 
+1. First and foremost, the command name. Without a prefix character.  
+2. Mandatory arguments go with &lt;argument&gt;   
+3. Optional arguments are surrounded like this: [argument]  
+4. Next comes a dash and the help text. 
+ 
+So for example it could look like this:  
 `hello <name> [othername...] - Say hello to someone`
 
     getHelp() { return this.helptext; }
@@ -39,8 +42,8 @@ This is how the help text gets returned. This is useful for either initiation (w
 
     init (underscore) { _ = underscore; /* ... */ }
 
-The init function is run right after a command is loaded (commands.js, in .load() ). Note, _ is also set in this function. Use this to get access to any other bot functionality (such as responding to users, sending raw IRC or outputting log messages). 
-You may also return anything aside from 'false' to signify your module's loading has broken something. 
+The init function is run when a command is loaded (find it in commands.js, in function .load()). Note, the _ variable is also set in this function. Use this to get access to any other bot functionality (such as responding to users, sending raw IRC or outputting log messages).  
+You may also return anything aside from 'false' to signify your module's loading has failed. 
 
     exec (ircdata) { /* ... */}
 
