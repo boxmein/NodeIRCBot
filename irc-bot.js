@@ -17,9 +17,9 @@ var _ = {
   // Essentials
   net : require("net"),
   http : require("http"),
-  sys : require("sys"),
   fs: require("fs"),
   cp: require("child_process"),
+  os: require("os"),
   // Modules
   output   : require("./output.js"),   // Output formatting
   config   : require("./config.js"),   // Configuration
@@ -117,6 +117,13 @@ var connection = {
         found = _.badwords.scan(ircdata);
         if(found) {
           _.badwords.announce(ircdata, found);
+        }
+      }
+      // 7. CTCP
+      if (ircdata.message.indexOf("\x01") === 0) {
+        if (ircdata.message.substring(1).indexOf("VERSION") === 0) 
+        {
+          _.irc.notice(ircdata.sender, "\x01VERSION NodeIRCBot by boxmein (running on {0})\x01".format(_.os.hostname()));
         }
       }
     }
