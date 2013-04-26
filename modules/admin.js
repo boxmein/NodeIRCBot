@@ -31,7 +31,7 @@ module.exports = {
 		if (!(this.admins.hasOwnProperty(ircdata.sender)))
 			throw "Sender isn't an admin";
 		var subcommand = ircdata.args.shift() || false;
-		console.log("admin:exec", "sender: " + ircdata.sender + "; sub: " + subcommand);
+		console.alert("Admin command: ", "sender: " + ircdata.sender + "; sub: " + subcommand);
 		if (!subcommand)
 			throw "No subcommand specified";
 		// MODE #channel +-mode name
@@ -148,7 +148,6 @@ module.exports = {
 			// And there's a clearance level
 			var clearance = ircdata.args.shift() || false;
 			// Return clearance if exist
-			console.log("admin:exec:cl", "running clearance command, nickname: " + nickname + ", clearance:" + clearance);
 			if (!clearance) {
 				if (this.admins.hasOwnProperty(nickname) && this.admins[nickname].level) 
 					_.commands.respond(ircdata, "Clearance: " + this.admins[nickname].level);

@@ -18,7 +18,7 @@ module.exports = {
 		_.commands.respond(ircdata, "Hello! :D", true);
 	},
 	die: function() { // Before closing the bot
-		_.output.log("hello:die", "D:");
+		_.output.alert("hello:die", "D:");
 	},
 	onEnable: function() { // After enabling the command
 		_.output.log("hello:onEnable", ":)");
