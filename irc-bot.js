@@ -18,7 +18,7 @@ var _ = {
   os: require("os"),
 
   output   : require("./output.js"),
-  config   : require("./config.js"),
+  config   : require("./config.js") || require("./config.default.js"),
   commands : require("./commands.js"),
   irc      : require("./irc.js"),
 
