@@ -48,7 +48,9 @@ module.exports = {
             } catch(err) { throw "Error parsing XML: " + err; }
           });
         }
-        else throw "HTTP response wasn't OK: " + response.statusCode; 
+        else 
+          throw "http://ws.audioscrobbler.com/2.0/?method=user.getRecentTracks&limit=2&api_key=&user="+ 
+              username + " wasn't OK: " + response.statusCode; 
     });
     req.on("error", function(evt) { throw "Request error: " + evt.message; });
     req.end();
