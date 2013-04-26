@@ -5,6 +5,7 @@
 var config = {
   // For prefix, see commands
   silent: false, // Hides log and channel messages, leaves errors
+  doublesilent: false, // Hides alerts too, leaves errors
   loud: true,  // Says error messages out
   prefix: "#",
   textlogging: true, // Does the <nick/channel> logging thing
