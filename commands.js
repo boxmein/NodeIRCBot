@@ -62,15 +62,15 @@ var commands = {
     this.load(cmd, this.cmds[cmd].file);
   },*/
   generateCmdList: function() {
-    var arrr = "";
+    var commandlist = "";
     for (var cmd in this.cmds) {
       if (cmd == "owner" || cmd == "admin" || cmd == "gam")
         cmd += "...";
-      arrr += cmd + ", ";
+      commandlist += cmd + ", ";
     }
     // remove trailing comma space
-    arrr = arrr.substring(0, arrr.length-2);
-    return arrr;
+    commandlist = commandlist.substring(0, commandlist.length-2);
+    return commandlist;
   },
   respond: function(ircdata, reply, nonick) {
     _.irc.privmsg(ircdata.channel, (nonick ? "" : ircdata.sender + ": ")  + reply);
