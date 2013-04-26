@@ -33,23 +33,27 @@ var output = {
   announce: function(message) {
     if (typeof message !== "string") message = ""+message;
     if (!_.config.silent) 
-      console.log("[--] --- " + message.trim() + " ---" + col.r())
+      console.log("[--] --- " + message.trim() + " ---" + col.r());
   },
   chanmsg: function(ircdata) {
     if (!_.config.silent) 
       console.log(col.c(col.white,1) + "[##]<{0}/{1}> {2}".format(ircdata.sender, ircdata.channel, ircdata.message) + col.r());
+  },
+  alert: function (message) {
+    if (!_.config.doublesilent) // Suppresses alerts
+      console.log(col.c(col.yellow) + "[!!] " + message + col.r());
   }
 };
 
 module.exports = output;
 
-var col = { // ANSI escape colours. Not all of the below work on windows.
-  reset          :  0, // Back to the ordinary colour
-  bold           :  1, // Makes some colours brighter.
-  dark           :  2, // ?
+var col = {
+  reset          :  0,
+  bold           :  1,
+  dark           :  2,
   underline      :  4,
   blink          :  5,
-  negative       :  7, // Reverse video!
+  negative       :  7,
   black          : 30,
   red            : 31,
   green          : 32,
@@ -62,9 +66,6 @@ var col = { // ANSI escape colours. Not all of the below work on windows.
     return "\033["+ color + (gmode? ";" + gmode : "") + "m";
   },
   r: function() {
-    return "\033[" + col.reset + "m";
+    return "\033["+ this.reset + "m";
   }
-}
-String.prototype.trim = function() { // woo stackoverflow
-  return this.replace(/^\s+|\s+$/g, "");
 };
