@@ -5,40 +5,33 @@
 // Just keep running
 // Just look ahead
 // You might be losing but you're not dead
-
-// IRC bot core
-console.log("-------------------------------");
-console.log("Boxmein's node IRC bot started.");
-console.log("-------------------------------");
-console.log("PWD: " + process.cwd());
-
-// [ Module requirements]
 var _ = {
-  // Essentials
+  // 
+  // All the requirements of this program are here.
+  // The _ object is passed around for references.
+  // Some modules may require modules themselves. 
+  //
   net : require("net"),
   http : require("http"),
   fs: require("fs"),
   cp: require("child_process"),
   os: require("os"),
-  // Modules
-  output   : require("./output.js"),   // Output formatting
-  config   : require("./config.js"),   // Configuration
-  commands : require("./commands.js"), // Channel commands
-  irc      : require("./irc.js"),      // IRC wrappers
-  // Command specialties
-  Sandbox  : require("sandbox"),       // Javascript sandbox
-  DOMParser: require("xmldom").DOMParser, // XML DOM traversal
-  // Data files
+
+  output   : require("./output.js"),
+  config   : require("./config.js"),
+  commands : require("./commands.js"),
+  irc      : require("./irc.js"),
+
+  Sandbox  : require("sandbox"),          
+  DOMParser: require("xmldom").DOMParser,
   adminData: require("./modules/data/admins.json")
 };
-// Enable checks
-if (_.config.badwords.enable) 
-  _.badwords = require("./badword.js");
-else 
-  _.badwords = {init: function(){}};
-// [/Module requirements]
+
 
 var connection = {
+  // 
+  // Here lies everything to do with connecting to the IRC.
+  // 
   client: new _.net.Socket(),
   PORT: 6667,
   HOST: _.config.server,
@@ -47,7 +40,7 @@ var connection = {
     _.output.init(_); // output > everything
     _.commands.init(_);
     _.irc.init(_);
-    _.badwords.init(_);
+    //_.badwords.init(_);
     _.irc.setClient(connection.client);
 
     _.output.log("irc.onConnected", "Connection successful");
@@ -67,7 +60,7 @@ var connection = {
       _.commands.exec(ircdata);
     }
     catch (err) { 
-      _.output.err("command:" + ircdata.command, err); 
+      _.output.alert("c:" + ircdata.command + " -> " + err); 
       if (_.config.loud) {
         _.commands.respond(ircdata, err);
       }
@@ -75,7 +68,7 @@ var connection = {
   },
   onData: function(data) {
     if(_.config.rawlogging)
-        _.output.log("",data); // output raw IRC
+        _.output.log("",data);
 
     // Channel messages and commands
     if (data.indexOf("PRIVMSG ") != -1) { 
@@ -157,7 +150,7 @@ var connection = {
   },
   // If we get dumped
   onConnectionClose: function() {
-    _.output.log("irc.onConnectionClose", "Disconnected ()");
+    _.output.alert("irc.onConnectionClose", "Disconnected ()");
     _.irc.quit(undefined, true); 
   }
 };
@@ -177,16 +170,9 @@ if (!String.prototype.format) {
   };
 }
 
-connection.client.setEncoding("ascii");
-connection.client.setNoDelay();
-connection.client.connect(connection.PORT, connection.HOST, connection.onConnected);
+
 var stdin = process.openStdin();
 
-connection.client.on("data", connection.onData);
-connection.client.on("close", connection.onConnectionClose);
-connection.client.on("error", function(chunk) { 
-  _.output.log("connection.client:onerror", "Socket error: " + chunk);
-});
 stdin.on('data', function(data) { 
   // feel free to add commands here. 
   data = data.toString().trim();
@@ -217,4 +203,21 @@ stdin.on('data', function(data) {
       "[--] tlogging - toggles text logging");
 
   }
+});
+
+
+
+console.log("Running on {0}. \nStarted on {1}"
+    .format(_.os.hostname(), (new Date()).toUTCString()));
+console.log("Working directory: " + process.cwd());
+
+
+connection.client.setEncoding("ascii");
+connection.client.setNoDelay();
+connection.client.connect(connection.PORT, connection.HOST, connection.onConnected);
+
+connection.client.on("data", connection.onData);
+connection.client.on("close", connection.onConnectionClose);
+connection.client.on("error", function(chunk) { 
+  _.output.err("connection.client:onerror", "Socket error: " + chunk);
 });
