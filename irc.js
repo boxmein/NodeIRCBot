@@ -31,17 +31,21 @@ var irc = {
     irc.raw("PART " + channel);
   },
   quit: function(quitmsg, nosendquit) {
+    _.output.alert("Quitting: requested by owner.");
     for (var k in _.commands.cmds) 
     {
       var each = _.commands.cmds[k];
       if (each.die)
         each.die();
     }
+
     if (!quitmsg) 
       quitmsg = "D:";
+
     //irc.privmsg("#powder-bots", this.quitmsgs[index]);
     if (!nosendquit)
       irc.raw("QUIT :" + quitmsg);
+
     setTimeout(function() { 
       process.exit(0); 
     }, 5000);
