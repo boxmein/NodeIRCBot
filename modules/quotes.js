@@ -4,13 +4,18 @@ module.exports = {
 	enable: 1,
 	getHelp: function() { return this.helptext; },
 	// Return anything but false when something went wrong
+
+
 	init: function(underscore) { 
 		_ = underscore; 
 		console.log("Initialised quotes.js");
 	},
+
+
 	exec: function(ircdata) {
 		try {
 			var index = ircdata.args[0] || false;
+
 			if (!ircdata.args[0]) {
 				index = Math.round(Math.random() * quotes.length);
 			}
@@ -20,6 +25,7 @@ module.exports = {
 					_.commands.respond(ircdata, "I have " + quotes.length + " quotes in my database.");
 				index = parseInt(ircdata.args[0]);
 			}
+
 			if (quotes[index]) 
 					_.commands.respond(ircdata, quotes[index]);
 			else

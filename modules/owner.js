@@ -11,7 +11,9 @@ module.exports = {
 			"relist": "relist - reloads the command list",
 			"quit"  : "quit - quits the bot",
 			"restart": "restart - restarts the bot via a child process",
-			"list" : "list - lists all my commands"
+			"list" : "list - lists all my commands",
+			"raw" : "raw <raw irc to the end> - Raw IRC entry",
+			"identify": "identify <password> - Tries to identify to this nickname"
 		}
 	},
 	enable: 1,
@@ -28,6 +30,8 @@ module.exports = {
 		var subcmd = ircdata.args.shift() || false;
 		if (!subcmd) 
 			throw "No subcommand specified";
+
+
 		//
 		// #owner enable <module> - sets its .enable flag to 1
 		//
@@ -42,6 +46,8 @@ module.exports = {
 			if (_.commands.cmds[command].onEnable)
 				_.commands.cmds[command].onEnable();
 		}
+
+
 		//
 		// #owner disable <module> - sets its .enable flag to 0
 		//
@@ -56,6 +62,8 @@ module.exports = {
 			if (_.commands.cmds[command].onDisable)
 				_.commands.cmds[command].onDisable();
 		}
+
+
 		//
 		// #owner load <filename> <script> - loads a module.
 		//
@@ -69,8 +77,12 @@ module.exports = {
 				throw "No command name specified: " + commandname;
 			_.commands.load(commandname, filename);
 		}
+
+
 		//
 		// #owner reload <module> - reloads existing module
+		// 
+
 		else if (subcmd == "reload")
 		{
 			var module = ircdata.args.shift() || false;
@@ -81,6 +93,8 @@ module.exports = {
 			_.output.log("owner:reload", "Reloading module: " + module);
 			_.commands.reload(module);
 		}
+
+
 		//
 		// #owner config <key> [value] - returns <key>'s value or sets <key> to [value]
 		//
@@ -102,6 +116,9 @@ module.exports = {
 			catch (err) {}
 			_.config[configrule] = configvalue;
 		}
+
+
+
 		//
 		// #owner relist - regenerates the command list
 		//
@@ -109,6 +126,9 @@ module.exports = {
 		{
 			_.commands.cmds.list.setList(_.commands.generateCmdList());
 		}
+
+
+
 		//
 		// #owner quit - makes the bot quit :(  
 		//
@@ -116,6 +136,9 @@ module.exports = {
 			var index = Math.floor(Math.random() * quitmessages.length);
 			_.irc.quit(quitmessages[index], false);
 		}
+
+
+
 		//
 		// #owner restart - makes the bot restart
 		//
@@ -125,17 +148,32 @@ module.exports = {
 			child.unref();
 			this.exec({hostmask: "unaffiliated/boxmein", args: ["quit"]});
 		}
+
+
+
 		//
 		// #owner list - lists owner commands
 		//
 		else if (subcmd == "list") {
 			_.commands.respond(ircdata, "list, quit, relist, config, enable, disable, load, reload, restart");
 		}
+
+
+
 		// 
 		// #owner recmd - reloads every command. 
 		// 
 		else if (subcmd == "recmd") {
 			_.commands.respond(ircdata, _.commands.init(_) ? "Something went wrong, see log" : "Commands reloaded");
+		}
+
+
+		//
+		// #owner identify [password] - Sends an identification in case that it hasn't been sent.
+		//                              Use with caution and only in queries. 
+		//
+		else if (subcmd == "identify") {
+			_.irc.privmsg("NickServ", "IDENTIFY " + (ircdata.args.shift() || _.config.password));
 		}
 	}
 };

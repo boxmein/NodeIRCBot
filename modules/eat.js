@@ -6,12 +6,16 @@ module.exports = {
 	// Return anything but false when something went wrong
 	init: function(underscore) { 
 		_ = underscore; 
-		console.log("Initialised eat.js")
+		console.log("Initialised eat.js");
 	},
 	exec: function(ircdata) {
-		var eaten = _.commands.cleanup_query(ircdata.args[0] || ircdata.sender);
+		var eaten = _.commands.cleanup_query(
+			ircdata.args[0] || 
+			ircdata.sender);
+
 		if (eaten.length > 20) 
 			eaten = eaten.slice(0, 20);
+
 		_.irc.action(ircdata.channel, "eats " + eaten);
 	}
-}
+};
