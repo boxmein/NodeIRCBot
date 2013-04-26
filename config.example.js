@@ -1,15 +1,21 @@
+// Log levels!
+var l = {
+  RAW_DATA: 1,        // Raw IRC      [<<]
+  TEXT_LOGS: 2,       // Text logging [##] <nickname/#channel> text
+  ALERTS: 4,          // Alerts       [!!]
+  LOGS: 8,            // Logging      [LL]
+  ERRORS: 16          // Errors       [EE]
+};
+
 // Example configuration file
 // Note, don't ever broadcast this, as it contains your NickServ password
 // and Last.fm secret API keys!
 // Some parts may not be used right now.
 var config = {
   // For prefix, see commands
-  silent: false, // Hides log and channel messages, leaves errors
-  doublesilent: false, // Hides alerts too, leaves errors
+  loglevel: l.ALERTS | l.LOGS | l.ERRORS, // Add together values from l. 
   loud: true,  // Says error messages out
   prefix: "!",
-  textlogging: true, // Does the <nick/channel> logging thing
-  rawlogging: false, // Logs everything
   enableSandboxJS: false,
   nickname: "NameUnchanged",
   pass: "doyoubelieveinmagic",
@@ -32,3 +38,12 @@ var config = {
   }
 };
 module.exports = config;
+
+// Log levels!
+var l = {
+  RAW_DATA: 1,        // Raw IRC      [<<]
+  TEXT_LOGS: 2,       // Text logging [##] <nickname/#channel> text
+  ALERTS: 4,          // Alerts       [!!]
+  LOGS: 8,            // Logging      [LL]
+  ERRORS: 16          // Errors       [EE]
+};

@@ -11,61 +11,94 @@ var output = {
     _ = underscore;
     _.output.log("", "Initialized output.js");
   },
+
+  // General log messages
   log: function(sender, message) {
-    if (typeof message !== "string") message = ""+message;
-    if(!_.config.silent) 
-      console.log(col.c(col.black,1) + "[LL] " + sender + ": " + message.trim() + col.r());
+    if (typeof message !== "string") 
+      message = ""+message;
+
+
+    if(_.config.loglevel & l.LOGGING) 
+      console.log(
+        "\033[0;1m" + 
+        "[LL] " + sender + ": " + 
+        message.trim() + 
+        "\033[0m");
   },
+
+  // Errors. Close to fatal.
   err: function(sender, message) {
-    if (typeof message !== "string") message = ""+message;
-    console.log(col.c(col.red, 1) + "[EE] " + sender + ": " + message.trim() + col.r());
+    if (typeof message !== "string") 
+      message = ""+message;
+
+    if (_.config.loglevel & l.ERRORS)
+      console.log("\033[31;1m" + 
+        "[EE] " + sender + ": " + 
+        message.trim() + 
+        "\033[0m");
   },
+
+  // General output, used by sent raw data
   out: function(sender, message) {
-    if (typeof message !== "string") message = ""+message;
-    if(!_.config.silent) 
-      console.log(col.c(col.black, 1) + "[>>] " + sender + ": " + message.trim() + col.r());
+    if (typeof message !== "string") 
+      message = ""+message;
+
+
+    if(_.config.loglevel & l.RAW_DATA) 
+      console.log("\033[0;1m" + 
+        "[>>] " + sender + ": " + 
+        message.trim() + "\033[0m");
   },
-  inn: function(message) { // typo is on purpose
-    if (typeof message !== "string") message = ""+message;
-    if(!_.config.silent) 
-      console.log("[<<] " + message.trim() + col.r());
+
+  // General input, used by receive message
+  inn: function(message) {
+    if (typeof message !== "string") 
+      message = ""+message;
+
+
+    if(_.config.loglevel & l.RAW_DATA) 
+      console.log("[<<] " + message.trim() + 
+        "\033[0m");
   },
+
+  // I dunno lol. Bypasses all logging messages. Use with caution.
   announce: function(message) {
-    if (typeof message !== "string") message = ""+message;
-    if (!_.config.silent) 
-      console.log("[--] --- " + message.trim() + " ---" + col.r());
+    if (typeof message !== "string") 
+      message = ""+message; 
+
+
+    console.log("[--] --- " + message.trim() + " ---");
   },
+
+  // Text logging format
   chanmsg: function(ircdata) {
-    if (!_.config.silent) 
-      console.log(col.c(col.white,1) + "[##]<{0}/{1}> {2}".format(ircdata.sender, ircdata.channel, ircdata.message) + col.r());
+    if (_.config.loglevel & l.TEXT_LOGS) 
+      console.log("\033[37;1m" + 
+        "[##]<{0}/{1}> {2}".format(
+          ircdata.sender, 
+          ircdata.channel, 
+          ircdata.message) + 
+        "\033[0m");
   },
+
+  // General alert. Non-fatal or effectless errors such as wrong command syntax.
   alert: function (message) {
-    if (!_.config.doublesilent) // Suppresses alerts
-      console.log(col.c(col.yellow) + "[!!] " + message + col.r());
+    if (_.config.loglevel & l.ALERTS) // Suppresses alerts
+      console.log("\033[33;1m" + 
+        "[!!] " + message + 
+        "\033[0m");
   }
 };
 
 module.exports = output;
 
-var col = {
-  reset          :  0,
-  bold           :  1,
-  dark           :  2,
-  underline      :  4,
-  blink          :  5,
-  negative       :  7,
-  black          : 30,
-  red            : 31,
-  green          : 32,
-  yellow         : 33,
-  blue           : 34,
-  magenta        : 35,
-  cyan           : 36,
-  white          : 37,
-  c: function(color, gmode) {
-    return "\033["+ color + (gmode? ";" + gmode : "") + "m";
-  },
-  r: function() {
-    return "\033["+ this.reset + "m";
-  }
+
+
+// Log levels!
+var l = {
+  RAW_DATA: 1,        // Raw IRC      [<<]
+  TEXT_LOGS: 2,       // Text logging [##] <nickname/#channel> text
+  ALERTS: 4,          // Alerts       [!!]
+  LOGS: 8,            // Logging      [LL]
+  ERRORS: 16          // Errors       [EE]
 };

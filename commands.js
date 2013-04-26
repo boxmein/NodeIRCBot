@@ -87,3 +87,13 @@ var commands = {
   reload: function() { }
 };
 module.exports = commands;
+
+// Log levels!
+var l = {
+  ALL_OUTPUT: 0,
+  NO_RAWS: 1, 
+  NO_TEXT: 2,
+  NO_LOGGING: 3, 
+  NO_ALERTS: 4, 
+  NO_ERRORS: 5
+};

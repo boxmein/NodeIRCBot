@@ -1,12 +1,17 @@
+// Log levels!
+var l = {
+  RAW_DATA: 1,        // Raw IRC      [<<]
+  TEXT_LOGS: 2,       // Text logging [##] <nickname/#channel> text
+  ALERTS: 4,          // Alerts       [!!]
+  LOGS: 8,            // Logging      [LL]
+  ERRORS: 16          // Errors       [EE]
+};
 
 var config = {
   // For prefix, see commands
-  silent: false, // Hides log and channel messages, leaves errors
-  doublesilent: false, // Hides alerts as well
+  loglevel: l.ALERTS | l.LOGS | l.ERRORS, // Add together values from l. 
   loud:  false,  // Used by modular to output errors into the IRC
   prefix: "",    // The bot's command prefix character (if more than one there's a number you need change)
-  textlogging: true, // Does the <nick/channel> logging thing
-  rawlogging: false, // Logs everything
   enableSandboxJS: false, // Enables sandboxed JS interpreter 
   partmsg: "",   // Message to send when leaving channel
   quitmsg: "",   // Message to send when quitting
@@ -30,3 +35,12 @@ var config = {
   }
 };
 module.exports = config;
+
+// Log levels!
+var l = {
+  RAW_DATA: 1,        // Raw IRC      [<<]
+  TEXT_LOGS: 2,       // Text logging [##] <nickname/#channel> text
+  ALERTS: 4,          // Alerts       [!!]
+  LOGS: 8,            // Logging      [LL]
+  ERRORS: 16          // Errors       [EE]
+};
