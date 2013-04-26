@@ -7,13 +7,13 @@ var config = {
   silent: false, // Hides log and channel messages, leaves errors
   doublesilent: false, // Hides alerts too, leaves errors
   loud: true,  // Says error messages out
-  prefix: "#",
+  prefix: "!",
   textlogging: true, // Does the <nick/channel> logging thing
   rawlogging: false, // Logs everything
   enableSandboxJS: false,
-  nickname: "boxnode",
+  nickname: "NameUnchanged",
   pass: "doyoubelieveinmagic",
-  realname: "magikku",
+  realname: "boxmein/NodeIRCBot",
   server: "irc.freenode.net",
   //server: "localhost",
   channels: "##boxmein,##powder-bots",
