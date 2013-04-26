@@ -96,7 +96,9 @@ module.exports = {
 			{
 				_.commands.respond(ircdata, _.config[configrule]);
 			}
-			try { configvalue = parseInt(configvalue); }
+			try { 
+				configvalue = parseInt(configvalue, 10); 
+			}
 			catch (err) {}
 			_.config[configrule] = configvalue;
 		}
@@ -112,7 +114,7 @@ module.exports = {
 		//
 		else if (subcmd == "quit") {
 			var index = Math.floor(Math.random() * quitmessages.length);
-			_.irc.quit(quitmessages[index]);
+			_.irc.quit(quitmessages[index], false);
 		}
 		//
 		// #owner restart - makes the bot restart
@@ -136,7 +138,7 @@ module.exports = {
 			_.commands.respond(ircdata, _.commands.init(_) ? "Something went wrong, see log" : "Commands reloaded");
 		}
 	}
-}
+};
 
 var quitmessages = [
     "Get mad!",
