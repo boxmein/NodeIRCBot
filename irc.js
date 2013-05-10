@@ -32,12 +32,7 @@ var irc = {
   },
   quit: function(quitmsg, nosendquit) {
     _.output.alert("Quitting: requested by owner.");
-    for (var k in _.commands.cmds) 
-    {
-      var each = _.commands.cmds[k];
-      if (each.die)
-        each.die();
-    }
+    _.commands.die(); 
 
     if (!quitmsg) 
       quitmsg = "D:";
