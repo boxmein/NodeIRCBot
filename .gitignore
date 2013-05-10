@@ -6,3 +6,6 @@ last.log
 *.old
 modules/*Copy
 modules/data/admins.json
+
+*.sublime-project
+*.sublime-workspace
