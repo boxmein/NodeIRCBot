@@ -39,4 +39,4 @@ module.exports = {
         _.commands.respond(ircdata, "R:" + out.result.slice(0, 50) + "...");
     }); 
   }
-}
+};

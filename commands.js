@@ -25,6 +25,7 @@ var commands = {
       // Load commands before this next line
       this.cmds.list.setList(this.generateCmdList()); // Give cmds the list
       this.cmds.help.setHelp(this.helps);// Give help the object that lists all helpings
+      console.log("This worked!"); 
 
     }
     catch (err) {
@@ -46,7 +47,7 @@ var commands = {
       throw "File name invalid: "+ file;
     try {
       this.cmds[cmd] = require(file);
-      // Set the filename
+      // Set the filename - use for reloading. 
       this.cmds[cmd].file = file;
       if(this.cmds[cmd].init(_))
         throw "Init failed for command " + cmd;
@@ -68,7 +69,7 @@ var commands = {
         cmd += "...";
       commandlist += cmd + ", ";
     }
-    // remove trailing comma space
+    // remove trailing comma+space
     commandlist = commandlist.substring(0, commandlist.length-2);
     return commandlist;
   },
@@ -84,7 +85,21 @@ var commands = {
     else
       this.cleanup_query(""+query);
   },
-  reload: function() { }
+  reload: function(modulename) { 
+    _.output.log("Attempting to reload : " + modulename); 
+    var filename = _.commands.cmds[modulename].file; 
+    _.output.log("...with filename: " + filename);
+    _.commands.cmds[modulename] = null;
+    _.commands.cmds[modulename] = require(filename); 
+  },
+  // Called before unloading from stdin commands.
+  die: function() {
+    for (var k in _.commands.cmds)
+    {
+      if (die in _.commands.cmds[k])
+        _.commands.cmds[k].die();
+    }
+  }
 };
 module.exports = commands;
 
