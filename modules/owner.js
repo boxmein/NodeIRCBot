@@ -25,6 +25,7 @@ module.exports = {
 
 	},
 	exec: function(ircdata) {
+		var command; 
 		if (!_.commands.sender_isowner(ircdata.hostmask)) 
 			throw "Sender not owner";
 		var subcmd = ircdata.args.shift() || false;
@@ -37,7 +38,7 @@ module.exports = {
 		//
 		if (subcmd == "enable") 
 		{
-			var command = ircdata.args.shift() || false;
+			command = ircdata.args.shift() || false;
 			if (!command) 
 				throw "No command to enable: " + command;
 			if (!_.commands.cmds.hasOwnProperty(command))
@@ -53,7 +54,7 @@ module.exports = {
 		//
 		else if (subcmd == "disable") 
 		{
-			var command = ircdata.args.shift() || false;
+			command = ircdata.args.shift() || false;
 			if (!command) 
 				throw "No command to disable: " + command;
 			if (!_.commands.cmds.hasOwnProperty(command))
