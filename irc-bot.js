@@ -47,6 +47,7 @@ var connection = {
     _.output.announce("Use 'quit' to exit this program. I'd prefer #owner quit.");
 
     setTimeout(function() {
+      _.irc.raw("PASS " + _.config.password, true); // Send password line
       _.irc.raw("NICK " + _.config.nickname);
       _.irc.raw("USER " + _.config.nickname + " 8 * :" + _.config.realname);
       _.irc.raw("JOIN " + _.config.channels);
@@ -54,20 +55,26 @@ var connection = {
   },
   handleCommands: function(ircdata) {
     _.output.inn(ircdata.sender + "(in " + ircdata.channel +") called for: " + ircdata.message);
-    ircdata.command = ircdata.args.shift().substring(1).trim().replace(/[^A-Za-z]+?/gi, ""); 
-    // commands.cmdlist is now chief in executive for testing whether a command exists
-    try {
+    ircdata.command = ircdata.args                    // ["#command315$^   ", "arg1", "arg2"...]
+                      .shift()                        // "#command315$^   "
+                      .substring(1)                   // "command315$^   "
+                      .trim()                         // "command315$^"
+                      .replace(/[^A-Za-z]+?/gi, "");  // "command"
+
+    try { 
+      // This is why you can throw stuff in modules.
       _.commands.exec(ircdata);
     }
     catch (err) { 
       _.output.alert("c:" + ircdata.command + " -> " + err); 
+      _.output.alert(err.stack);
       if (_.config.loud) {
         _.commands.respond(ircdata, err);
       }
     }
   },
   onData: function(data) {
-    if(_.config.rawlogging)
+    if(_.config.loglevel & l.RAW_DATA)
         _.output.log("",data);
 
     // Channel messages and commands
@@ -181,30 +188,84 @@ stdin.on('data', function(data) {
   var args = data.split(" ");
   var cmd  = args.shift();
   // output.log("stdin.onData", "received input: " + data);
-  if(cmd == "say") 
-    _.irc.privmsg(args.shift(), args.join(" "));
-  else if(cmd == "raw") 
-    _.irc.raw(args.join(" "));
-  else if(cmd == "join") 
-    _.irc.join(args.shift());
-  else if(cmd == "part") 
-    _.irc.part(args.shift());
-  else if(cmd == "quit")
-    _.irc.quit(undefined, true);
-  else if(cmd == "tlogging")
-    _.config.textlogging = !_.config.textlogging;
-  else if(cmd == "help") 
-  {
-    console.log(
-      "[--] Help:\n" + 
-      "[--] say <chan> <msg> - sends message to channel\n" + 
-      "[--] raw <RAW> - sends raw IRC\n[--] join <chan> - joins a channel\n" + 
-      "[--] part <chan> - parts a channel\n[--] quit - quits the server\n" +
-      "[--] tlogging - toggles text logging");
+  switch (cmd) {
+    case "say": 
+    case "tell":
+    case "privmsg":
+      _.irc.privmsg(args.shift(), args.join(" "));
+      break;
 
+    case "raw": 
+    case "raw-irc": 
+      _.irc.raw(args.join(" "));
+      break;
+
+    case "join": 
+    case "join-channel": 
+      _.irc.join(args.shift());
+      break;
+
+    case "leave-channel":
+    case "part-channel":
+    case "part": 
+      _.irc.part(args.shift());
+      break;
+
+    case "quit-server": 
+    case "quit": 
+      _.irc.quit("<STDIN>");
+      break;
+
+    case "tlogging":
+    case "toggle-textlogs": 
+      _.config.loglevel = _.config.loglevel ^ l.TEXT_LOGS;
+      break;
+
+    case "help": 
+    case "list": 
+      console.log(
+      "[--] Help:\n" + 
+      "[--] privmsg <chan> <msg> - sends message to channel\n" + 
+      "[--] raw-irc <RAW> - sends raw IRC\n[--] join <chan> - joins a channel\n" + 
+      "[--] leave-channel <chan> - parts a channel\n[--] quit - quits the server\n" +
+      "[--] toggle-textlogs - toggles text logging\n" +
+      "[--] reload <filename> <modulename> - reloads a module\n" + 
+      "[--] eval-unsafe <javascript> - runs unsafe Javascript");
+      break;
+
+    case "reload": 
+      // It has its own reload functionality
+      // To reload -any- module aside from core (irc-bot.js)
+      var filename = args.shift();
+      var modulename = args.shift(); 
+      console.log("Reloading... _[{0}] = require({1})".format(modulename, filename)); 
+      if (!(modulename in _))
+        console.log("Module wasn't in _ and will not be used probably");
+      try {
+        if (die in _[modulename])
+          _[modulename].die(); 
+
+        _[modulename] = require(filename); 
+      }
+      catch (error) {
+        console.log("require() went wrong: \n" + error + "\n" + error.stack);
+      }
+      break;
+    case "eval-unsafe": 
+    case "eval": 
+      eval(args.join(" "));
+      break;
   }
 });
 
+
+var l = {
+  RAW_DATA: 1,        // Raw IRC      [<<]
+  TEXT_LOGS: 2,       // Text logging [##] <nickname/#channel> text
+  ALERTS: 4,          // Alerts       [!!]
+  LOGS: 8,            // Logging      [LL]
+  ERRORS: 16          // Errors       [EE]
+};
 
 
 console.log("Running on {0}. \nStarted on {1}"
@@ -221,3 +282,21 @@ connection.client.on("close", connection.onConnectionClose);
 connection.client.on("error", function(chunk) { 
   _.output.err("connection.client:onerror", "Socket error: " + chunk);
 });
+
+// Does not hurt to try...
+process.on("exit", function() {
+  console.log("Brutal exit..."); 
+  _.irc.quit(undefined, true);
+});
+// Ctrl+C
+process.on("SIGINT", function() { 
+  console.log("^C caught."); 
+  _.irc.quit(undefined, true); 
+});
+
+process.on("uncaughtException", function(error) {
+  console.log("\033[33;1mCaught uncaught exception: " + error);
+  console.log("Stack trace: \n" + error.stack + "\033[0m"); 
+
+});
+
