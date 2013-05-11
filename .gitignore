@@ -1,11 +1,2 @@
-
-*.min.js
-config.js
-config.min.js
-last.log
-*.old
-modules/*Copy
-modules/data/admins.json
-
-*.sublime-project
 *.sublime-workspace
+*.sublime-project
