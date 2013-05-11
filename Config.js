@@ -58,7 +58,16 @@ var C = {
 
     admin: {
 
-    }
+    },
+
+    fastIgnore: true,                      // Fast ignore is only an 'in' search for nicknames!
+    fastIgnores: [                         // Fast ignore list only can consist of nicknames.
+      "TheBombMaker",
+      ""
+    ],
+    ignores: [                             // List parts of hostmasks here for matching. 
+      "unaffiliated/ristovski"
+    ]
   },
 
   commands: {
