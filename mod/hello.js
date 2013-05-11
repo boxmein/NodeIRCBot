@@ -14,13 +14,28 @@
 var _ = null;
 
 module.exports = {
+  // List of channels the command is disabled in.
+  disables: [],
+  // Command name. Required.
   fname: "hello",
+  // Command help text. Also required. :) 
   help: "Hello World equivalent",
-  params: [], // Params contains a list of 'argument names' to be passed. 
+  // Command parameters, for when the command needs arguments.
+  // Might also be generated automatically when left undefined.
+  params: [],  
+  // Run when the command is initialized.
+  // Equivalent of the old init
   onInit: function(under) {
     _ = under;
   },
+  // Run when the command is executed.
+  // Return a non-null value to respond to the sender with.
+  // Same as exec in the old format.
   onRun: function() {
     return _.config.commands.hello.message || "Hi"; 
-  }
+  },
+  // Equivalents as the old format.
+  // Ran when the command is enabled or disabled.
+  onEnable: function (channel) {},
+  onDisable: function (channel) {}
 };

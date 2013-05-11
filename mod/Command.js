@@ -33,12 +33,14 @@ var Command = function (command) {
   this.onRun = command.onRun;
 
   this.onEnable = command.onEnable ||
-    function() {
+    function(channel) {
+      this.disables[channel] = false; 
       return "Enabled command: " + this.fname; 
     };
 
   this.onDisable = command.onDisable ||
     function() {
+      this.disables[channel] = true;
       return "Disabled command: " + this.fname; 
     };
 
@@ -48,6 +50,18 @@ var Command = function (command) {
 
   this.onQuit = command.onQuit || null;
   this.onInit = command.onInit || null;
+};
+
+Command.prototype = {
+  fname: "",          // Function name of given command.
+  help: "",           // Help text of given command
+  onRun: null,        // Run handler
+  onEnable: null,     // Enable handler
+  onDisable: null,    // Disable handler
+  params: "",         // Parameter string
+  onQuit: null,       // Quit handler
+  onInit: null,       // Init handler
+  disables: null      // Disables object. Disabled in which channels?
 };
 
 
