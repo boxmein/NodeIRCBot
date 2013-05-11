@@ -69,6 +69,8 @@ var onData = function (chunk) {
         ircdata.sender.isOwner = true; 
 
       if (commands.cmds.hasOwnProperty(ircdata.command)) {
+        if (commands.cmds[ircdata.command].disables[ircdata.channel])
+          _.output.log(2, "Command is disabled in channel: " + ircdata.channel), return false;
         var result = commands.cmds[ircdata.command].onRun(ircdata); 
         if (result) {
           _.output.log(10, result);
