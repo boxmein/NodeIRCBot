@@ -54,24 +54,42 @@ var onData = function (chunk) {
   // << :xsBot!~xsBot@unaffiliated/mniip/bot/xsbot PRIVMSG ###xsbot :+<Sg_Voltage> you can only ...
   // >> PRIVMSG ###xsbot :text
   if (datasplit[1] && datasplit[1] == "PRIVMSG") {
+
     var hostmask = datasplit[0]; 
     var ircdata = new IRCData(datasplit); 
+
+    if (_.config.irc.fastIgnore)
+      if (ircdata.sender.nick in _.config.irc.fastIgnores) 
+        return false;
+    else {
+      for (var i = 0; i < _.config.irc.ignores.length; i++) {
+        if (ircdata.sender.hostmask.indexOf(_.config.irc.ignores[i]) != -1) 
+          return false; 
+      }
+    }
+
     if (ircdata.message.words[0].indexOf(_.config.irc.prefix) === 0) {
 
       // Command sanitization.
       ircdata.command = ircdata.message.words[0]
-                      .trim()
-                      .substring(_.config.irc.prefix.length)
+                      .trim() 
+                      .substring(_.config.irc.prefix.length) // arbitrary length prefixes!
                       .replace(_.config.behaviour.commandFilter, ""); 
+
       _.output.log(0, "Received command --> " +ircdata.command);
 
       if (ircdata.sender.hostmask.indexOf(_.config.irc.owner.hostmatch) != -1)
         ircdata.sender.isOwner = true; 
 
       if (commands.cmds.hasOwnProperty(ircdata.command)) {
-        if (commands.cmds[ircdata.command].disables[ircdata.channel])
-          _.output.log(2, "Command is disabled in channel: " + ircdata.channel), return false;
+
+        if (commands.cmds[ircdata.command].disables[ircdata.channel]) {
+          _.output.log(2, "Command is disabled in channel: " + ircdata.channel);
+          return false;
+        }
+
         var result = commands.cmds[ircdata.command].onRun(ircdata); 
+
         if (result) {
           _.output.log(10, result);
           respondToSender(ircdata, result); 
