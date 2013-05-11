@@ -28,6 +28,9 @@ var loadOld = function(filename, name) {
   cmd_old.onInit = cmd_old.init; 
   cmd_old.onQuit = cmd_old.die; 
   cmd_old.fname = name; 
+  
+  _.commands = {};
+  _.commands.respond = _.respondToSender;
 
   var cmd = new Cmd.Command(cmd_old); 
   module.exports.cmds[cmd.fname] = cmd; 
