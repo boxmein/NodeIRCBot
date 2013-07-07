@@ -5,7 +5,7 @@
   * ====
   * 
   * 1. Defines the entry point for the application.
-  * 2. Collects required modules and sets up the TCP connection.
+  * 2. Requires modules, initializes them and connects to the server.
   * 3. Manages standard input.
   * 4. Receives network data and dispatches commands.
 **/
@@ -22,22 +22,39 @@ var commands = require("./Commands.js");
 var common = {
   net: require('net'),
   os: require('os'),
+  http: require('http'),
 
   output: require('./Logging.js'),
-  irc: require('./IRCProtocol.js').irc
+  irc: require('./IRCProtocol.js').irc,
+  commands: require('./Commands.js')
+  /*
+  config: configuration,
+  sendRaw: function (raw_irc), // sends raw IRC data to server
+  respondToSender: function (ircdata, message), // responds to command issuer
+  conn: Socket,
+  helps: {  // keeps help texts for the help command
+      "command": {
+        text: "help text",
+        param: ["<mandatory parameter>", "[optional parameter]"]
+      }
+    }
+
+  */
 };
+var _ = common;
+
+var commands = _.commands; 
 
 // Modules that aren't passed around
 var connection = require('./Networking.js');
-var commands = require('./Commands.js');
 var IRCData = require('./IRCData.js').IRCData;
 
-common.config = config; 
-var _ = common;
+_.config = config; 
 
-for (var k in common) {
-  if (common[k].init) 
-    common[k].init(common);
+
+for (var k in _) {
+  if (_[k].init) 
+    _[k].init(_);
 }
 // ---------- </Modules> ---------
 
@@ -53,21 +70,26 @@ var onData = function (chunk) {
 
   // << :xsBot!~xsBot@unaffiliated/mniip/bot/xsbot PRIVMSG ###xsbot :+<Sg_Voltage> you can only ...
   // >> PRIVMSG ###xsbot :text
+  // 0 => false
   if (datasplit[1] && datasplit[1] == "PRIVMSG") {
 
     var hostmask = datasplit[0]; 
     var ircdata = new IRCData(datasplit); 
 
+    // ignores
     if (_.config.irc.fastIgnore)
+      // that's why I made this (v)
       if (ircdata.sender.nick in _.config.irc.fastIgnores) 
         return false;
     else {
+      // asdfg for loops (^)
       for (var i = 0; i < _.config.irc.ignores.length; i++) {
         if (ircdata.sender.hostmask.indexOf(_.config.irc.ignores[i]) != -1) 
           return false; 
       }
     }
 
+    // it's an IRC command
     if (ircdata.message.words[0].indexOf(_.config.irc.prefix) === 0) {
 
       // Command sanitization.
@@ -83,13 +105,14 @@ var onData = function (chunk) {
 
       if (commands.cmds.hasOwnProperty(ircdata.command)) {
 
-        if (commands.cmds[ircdata.command].disables[ircdata.channel]) {
+        if (commands.cmds[ircdata.command].disables && 
+            commands.cmds[ircdata.command].disables
+              .indexOf(ircdata.channel) != -1) {
           _.output.log(2, "Command is disabled in channel: " + ircdata.channel);
           return false;
         }
-
         var result = commands.cmds[ircdata.command].onRun(ircdata); 
-
+        // commands can return results for a generic response via respondToSender
         if (result) {
           _.output.log(10, result);
           respondToSender(ircdata, result); 
@@ -114,9 +137,7 @@ var onData = function (chunk) {
 
     if (_.config.irc.autoRejoin) {
       setTimeout(function() {
-
         sendRaw(_.irc.join(datasplit[2]));
-
       }, _.config.irc.autoRejoinDelay * 1000);
     }
   }
@@ -125,7 +146,8 @@ var onData = function (chunk) {
   // On ban..
   // << :boxmein!~boxmein@unaffiliated/boxmein MODE ##boxmein +b boxmein!*@*
   if (datasplit[1] && datasplit[1] == "MODE" && 
-      datasplit[3].indexOf("+") && datasplit[3].indexOf("b")) {
+      datasplit[3].indexOf("+") !== -1 && // +qb or whatever, i'm not sure
+      datasplit[3].indexOf("b") !== -1) {
     _.output.log(10, "I was banned from {0}!".format(datasplit[2]));
     _.output.log(10, "Taking no action.");
   }
@@ -149,16 +171,19 @@ var onDisconnect = function (data) {
   process.exit(0); 
 };
 
+// called on socket error
 var onErr = function (error) {
 
 };
 
+// just raw things
 var sendRaw = function (raw) {
   _.output.log(1, ">> " +raw); 
   _.conn.write(raw + "\r\n"); 
 };
 common.sendRaw = sendRaw; 
 
+// pre-formatted responses, "PRIVMSG #channel :nickname: text"
 var respondToSender = function (ircdata, message) {
   sendRaw(_.irc.privmsg(ircdata.channel, ircdata.sender.nick + ": " + message)); 
 };
@@ -177,40 +202,49 @@ if (config.behaviour.stdinListen) {
     // feel free to add commands here. 
     _.output.log(0, "Standard input received"); 
 
+    // just in case...
     data = data.toString().trim();
     if (data === '') 
       return;
+    // 'args' in the meaning of 'words'
     var args = data.split(" ");
     var cmd  = args.shift();
     // output.log("stdin.onData", "received input: " + data);
     switch (cmd) {
+      // commands have many alternative names
+
+      // say <channel> <text text text> -> PRIVMSG
       case "say": 
       case "tell":
-      case "privmsg":
+      case "privmsg": 
         sendRaw(_.irc.privmsg(args.shift(), args.join(" ")));
         break;
 
+      // raw <raw raw raw> -> raw IRC sent to the server
       case "raw": 
       case "raw-irc": 
         sendRaw(args.join(" "));
         break;
 
+      // join <channel> -> JOIN channel
       case "join": 
       case "join-channel": 
         sendRaw(_.irc.join(args.shift()));
         break;
 
+      // part <channel> -> PART channel
       case "leave-channel":
       case "part-channel":
       case "part": 
         sendRaw(_.irc.part(args.shift()));
         break;
 
+      // quit -> disconnect
       case "quit-server": 
       case "quit": 
         sendRaw(_.irc.quit());
         break;
-
+      // list -> command list
       case "help": 
       case "list": 
         console.log(
@@ -223,6 +257,7 @@ if (config.behaviour.stdinListen) {
         "[--] eval-unsafe <javascript> - runs unsafe Javascript");
         break;
 
+      // eval <javascript code> -> unsafe JS
       case "eval-unsafe": 
       case "eval": 
         eval(args.join(" "));
@@ -259,8 +294,13 @@ if (!String.prototype.format) {
 
 var init = function() {
   _.output.log(0, "Initializing..."); 
+  // sets up all commands and prepares the help text object thingy
   commands.initAll(_); 
+  // returns the socket on which to perform writes/reads.
+  // sets up event handlers and the rest of the socket wharrgarbl
   common.conn = connection.connect(_, onData, onDisconnect, onErr); 
+
+  // if show startup message
   if (config.behaviour.startupMessages) {
     console.log("Running on {0}. \nStarted on {1}"
       .format(_.os.hostname(), (new Date()).toUTCString()));
@@ -271,7 +311,7 @@ var init = function() {
 
 // ---------- <Process stuff> ----------
 
-
+// event handlers for various thingies
 process.on("exit", function() {
   console.log("----- Exited -----"); 
 });
@@ -281,11 +321,11 @@ process.on("SIGINT", function() {
   console.log("^C caught."); 
 });
 
-
+// makes it more persistent but is it worth it? 
 process.on("uncaughtException", function(error) {
   console.log("\033[33;1mCaught uncaught exception: " + error);
   console.log("Stack trace: \n" + error.stack + "\033[0m"); 
 });
 
-
+// the one true entry point ^
 init(); 
