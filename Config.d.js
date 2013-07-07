@@ -65,6 +65,10 @@ var C = {
     // Keep command configs here, if you want to. 
     "hello": {
       message: "Hello! :D" 
+    },
+    "list": {
+      cacheCommandString: true,            // whether or not to keep the command string from the first call.
+      dontEmphasizeModules: false,         // if not to emphasize the modules from the commands (faster)
     }
   }
 };

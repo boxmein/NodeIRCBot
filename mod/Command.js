@@ -39,31 +39,20 @@ var Command = function (command) {
     };
 
   this.onDisable = command.onDisable ||
-    function() {
+    function(channel) {
       this.disables[channel] = true;
       return "Disabled command: " + this.fname; 
     };
 
-  // resorts to function's parameters.
-  // onRun's first parameter is always ircdata, skip that.
-  this.params = formatParams(command.params || this.onRun.params().slice(1)); 
+  // a STRING representing all the parameters the command needs
+  this.params = formatParams(command.params || []); 
 
   this.onQuit = command.onQuit || null;
   this.onInit = command.onInit || null;
-};
 
-Command.prototype = {
-  fname: "",          // Function name of given command.
-  help: "",           // Help text of given command
-  onRun: null,        // Run handler
-  onEnable: null,     // Enable handler
-  onDisable: null,    // Disable handler
-  params: "",         // Parameter string
-  onQuit: null,       // Quit handler
-  onInit: null,       // Init handler
-  disables: null      // Disables object. Disabled in which channels?
+  // if a command is actually a module (with sub-commands)
+  this.isModule = command.isModule;
 };
-
 
 var CommandError = Error; 
 CommandError.prototype.typeOf = function() { return "CommandError"; };
@@ -76,7 +65,6 @@ CommandError.prototype.constructor = function (text, name) {
 // Returns a formatted string given an array of command parameters.
 var formatParams = function (params) {
   params = params.join(", ");
-  params = params.substring(0, params.length-2); 
   return "(" + params + ")"; 
 };
 
@@ -84,6 +72,32 @@ module.exports = {
   'Command': Command, 
   'CommandError': CommandError
 };
+
+
+// StackOverflow. It fixes stuff.
+
+function MergeRecursive(obj1, obj2) {
+
+  for (var p in obj2) {
+    try {
+      // Property in destination object set; update its value.
+      if ( obj2[p].constructor==Object ) {
+        obj1[p] = MergeRecursive(obj1[p], obj2[p]);
+
+      } else {
+        obj1[p] = obj2[p];
+
+      }
+
+    } catch(e) {
+      // Property in destination object not set; create it and set its value.
+      obj1[p] = obj2[p];
+
+    }
+  }
+
+  return obj1;
+}
 
 Function.prototype.params = function() {
   var fstr = this.toString();
