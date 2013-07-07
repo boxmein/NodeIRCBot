@@ -5,7 +5,7 @@
  *      onRun: function,            // Ran when the command is called.
  *      onEnable: function,         // Ran when the command is enabled. 
  *      onDisable: function,        // Ran when the command is disabled.
- *      params: [],                 // Command's arguments in an array. Will be converted.
+ *      params: [],                 // Command's arguments in an array. Will be converted to a String.
  *      onQuit: function            // Ran when the program quits. 
  *      onInit: function (_)        // Ran when the program starts. _ contains references. 
  *    }
