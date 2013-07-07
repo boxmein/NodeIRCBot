@@ -15,7 +15,7 @@ var IRCData = function (rawr) {
   this.sender.hostmask = spacesplit[0]; 
   this.sender.nick = this.sender.hostmask.substring(1, this.sender.hostmask.indexOf('!'));
   this.channel = spacesplit[2];
-  this.message.words = this.message.fullmsg.split(' '); 
+  this.message.words = this.message.fullmsg.trim().split(' '); 
 
 };
 
@@ -39,3 +39,6 @@ IRCData.prototype = {
 };
 
 module.exports.IRCData = IRCData;
+
+if (!String.prototype.trim)
+  String.prototype.trim = function() { return this.replace(/^\s+|\s+$/g, ""); };
